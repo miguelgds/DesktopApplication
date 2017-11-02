@@ -19,7 +19,7 @@ public class DesktopItem {
     private Boolean isFavourite;
     private Short order;
 
-    DesktopItem(DesktopID desktopId, IconID iconId, ColorID colorId, String name, PageID pageId, ApplicationID applicationId,
+    public DesktopItem(DesktopID desktopId, IconID iconId, ColorID colorId, String name, PageID pageId, ApplicationID applicationId,
 	    Boolean isFavourite, Short order) {
 	super();
 	setDesktopId(desktopId);
@@ -31,6 +31,29 @@ public class DesktopItem {
 	setApplicationId(applicationId);
 	setIsFavourite(isFavourite);
 	setOrder(order);
+    }
+    
+    public DesktopItem(DesktopItem item){
+	this(item.getDesktopId(), item.getIconId(), item.getColorId(), item.getName(), item.getPageId(), item.getApplicationId(), item.getIsFavourite(), item.getOrder());
+    }
+
+    /**
+     * BUSINESS LOGIC
+     */
+    public boolean isApplication() {
+	return applicationId == null;
+    }
+
+    public boolean isPage() {
+	return pageId == null;
+    }
+
+    public void reorder(Short order) {
+	setOrder(order);
+    }
+
+    public void moveToDesktop(DesktopID desktopTo) {
+	setDesktopId(desktopTo);
     }
 
     /**

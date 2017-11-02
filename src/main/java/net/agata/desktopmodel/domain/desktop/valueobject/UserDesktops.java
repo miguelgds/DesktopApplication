@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.Validate;
 
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
+import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
 import net.agata.desktopmodel.subdomain.user.UserID;
 
@@ -79,8 +80,35 @@ public class UserDesktops {
 		   .findAny();
     }
 
-    public void moveItem(DesktopID desktopFrom, Short itemToMoveIndex, DesktopID desktopTo) {
-	// TODO
+    public void moveItem(DesktopID desktopFrom, Short itemToMoveOrder, DesktopID desktopTo) {
+	Validate.notNull(desktopFrom);
+	Validate.notNull(itemToMoveOrder);
+	Validate.notNull(desktopTo);
+
+	Desktop desktopSource = this.findUserDesktopActive(desktopFrom)
+		    .orElseThrow(() -> new IllegalArgumentException(String.format("El usuario no tiene asignado un escritorio con id: %s", desktopFrom)));
+	
+	Desktop desktopTarget = this.findUserDesktopActive(desktopTo)
+		    .orElseThrow(() -> new IllegalArgumentException(String.format("El usuario no tiene asignado un escritorio con id: %s", desktopTo)));
+	
+	DesktopItem itemToMove = Optional.of(desktopSource)
+				     	 .map(Desktop::getItems)
+				     	 .flatMap(items -> items.stream()
+					     		    .filter(i -> i.getOrder().equals(itemToMoveOrder))
+					     		    .findAny())
+				     	 .orElseThrow(() -> new IllegalArgumentException(
+					     String.format("No existe un item para el escritorio %s con orden %d", desktopFrom, itemToMoveOrder)));
+	
+	desktopSource.moveItem(itemToMove, desktopTarget);
+	desktopRepository.update(desktopSource);
+	desktopRepository.update(desktopTarget);
+    }
+    
+    private Set<Desktop> userActiveDesktops() {
+	return this.desktopRepository.findByUser(this.userId)
+				     .stream()
+				     .filter(Desktop::isActive)				     
+				     .collect(Collectors.toSet());
     }
 
     /**
@@ -94,13 +122,6 @@ public class UserDesktops {
     private void setUserId(UserID userId) {
 	Validate.notNull(userId);
 	this.userId = userId;
-    }
-
-    public Set<Desktop> userActiveDesktops() {
-	return this.desktopRepository.findByUser(this.userId)
-				     .stream()
-				     .filter(Desktop::isActive)				     
-				     .collect(Collectors.toSet());
     }
 
     @Override

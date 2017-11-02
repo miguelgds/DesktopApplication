@@ -26,7 +26,10 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 
     @Override
     public Collection<Desktop> findAll() {
-	return datasource.values();
+	return datasource.values()
+			 .stream()
+			 .map(Desktop::new)
+			 .collect(Collectors.toList());
     }
 
     @Override
@@ -38,7 +41,10 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 
     @Override
     public Desktop findById(DesktopID desktopId) {
-	return datasource.getOrDefault(desktopId, null);
+	return findAll().stream()
+			.filter(d -> d.getDesktopId().equals(desktopId))
+			.findAny()
+			.orElse(null);
     }
 
     @Override
@@ -49,7 +55,7 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 
     @Override
     public void update(Desktop desktop) {
-	datasource.replace(desktop.getDesktopId(), desktop);
+	datasource.put(desktop.getDesktopId(), desktop);
     }
 
 }

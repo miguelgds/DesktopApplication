@@ -9,12 +9,17 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
+import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
+import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopSatateEnum;
 import net.agata.desktopmodel.domain.desktop.valueobject.UserDesktops;
 import net.agata.desktopmodel.infrastructure.desktop.repository.DesktopRepositoryInMemoryImpl;
+import net.agata.desktopmodel.subdomain.ui.ColorID;
+import net.agata.desktopmodel.subdomain.ui.IconID;
+import net.agata.desktopmodel.subdomain.ui.PageID;
 import net.agata.desktopmodel.subdomain.user.UserID;
 
 public class UserDesktopsTest {
@@ -27,11 +32,17 @@ public class UserDesktopsTest {
 	super();
 	userId = new UserID(1);
 	desktopRepository = new DesktopRepositoryInMemoryImpl(new HashSet<>(Arrays.asList(
-		new Desktop(new DesktopID("1"), "PANEL DE USUARIO       ", userId, (short) 0, true, true, DesktopSatateEnum.ACTIVE, new HashSet<>()),
+		new Desktop(new DesktopID("1"), "PANEL DE USUARIO       ", userId, (short) 0, true, true, DesktopSatateEnum.ACTIVE, 
+			new HashSet<>(Arrays.asList(
+				new DesktopItem(new DesktopID("1"), new IconID((short)1), new ColorID((short) 1), "PAGINA 1", new PageID(1), null, false, (short) 0)
+			))),
 		new Desktop(new DesktopID("2"), "FUNCIONALIDADES COMUNES", userId, (short) 1, true, true, DesktopSatateEnum.ACTIVE, new HashSet<>()),
 		new Desktop(new DesktopID("3"), "PANEL DE CONFIGURACION ", userId, (short) 2, true, true, DesktopSatateEnum.DELETED, new HashSet<>()),
 		new Desktop(new DesktopID("4"), "PANEL CUSTOMIZADO1     ", userId, (short) 3, false, true, DesktopSatateEnum.ACTIVE, new HashSet<>()),
-		new Desktop(new DesktopID("5"), "PANEL CUSTOMIZADO2     ", userId, (short) 4, false, false, DesktopSatateEnum.ACTIVE, new HashSet<>()),
+		new Desktop(new DesktopID("5"), "PANEL CUSTOMIZADO2     ", userId, (short) 4, false, false, DesktopSatateEnum.ACTIVE, 
+			new HashSet<>(Arrays.asList(
+				new DesktopItem(new DesktopID("5"), new IconID((short)2), new ColorID((short) 2), "APP 1", null, new ApplicationID("ID"), false, (short) 0)
+			))),
 		new Desktop(new DesktopID("6"), "FUNCIONALIDADES COMUNES", new UserID(2), (short) 1, false, true, DesktopSatateEnum.ACTIVE, new HashSet<>())
 	)));
 	this.userDesktops = new UserDesktops(userId, desktopRepository);
@@ -69,6 +80,27 @@ public class UserDesktopsTest {
 					   .findAny()
 					   .map(d -> d.getState().equals(DesktopSatateEnum.DELETED))
 					   .orElse(Boolean.FALSE));
+    }
+
+    @Test
+    public void moveDesktopItem() {	
+	DesktopID desktopFrom = new DesktopID("1");
+	DesktopID desktopTo = new DesktopID("5");
+	
+	userDesktops.moveItem(desktopFrom, (short) 0, desktopTo);
+
+	Assert.assertTrue(desktopRepository.findByUser(this.userId)
+					   .stream()
+					   .filter(d -> d.getDesktopId().equals(desktopFrom))
+					   .findAny()
+					   .map(d -> d.getItems().size())
+					   .orElse(0) == 0);
+	Assert.assertTrue(desktopRepository.findByUser(this.userId)
+		   			   .stream()
+		   			   .filter(d -> d.getDesktopId().equals(desktopTo))
+		   			   .findAny()
+					   .map(d -> d.getItems().size())
+					   .orElse(0) == 2);
     }
 
 }

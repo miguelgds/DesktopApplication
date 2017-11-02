@@ -1,9 +1,8 @@
 package net.agata.desktopmodel.domain.desktop.entity;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
@@ -37,6 +36,14 @@ public class Desktop {
 	setState(state);
 	setItems(items);
     }
+    
+    public Desktop(Desktop desktop){
+	this(desktop.getDesktopId(), desktop.getName(), desktop.getUserId(), desktop.getOrder(), desktop.getFixed(), desktop.getReadonly(), desktop.getState(), 
+		desktop.getItems()
+		       .stream()
+		       .map(DesktopItem::new)
+		       .collect(Collectors.toSet()));
+    }
 
     /**
      * BUSINESS LOGIC
@@ -53,10 +60,12 @@ public class Desktop {
     }
 
     private Short nextItemOrder() {
-	return (short) this.items.stream()
-		  		 .mapToInt(di -> di.getOrder().intValue())
-		  		 .max()
-		  		 .orElse(0);
+	return this.items.stream()
+		  	 .map(di -> di.getOrder().intValue())
+		  	 .max(Integer::max)
+		  	 .map(m -> m + 1)
+		  	 .orElse(0)
+		  	 .shortValue();
     }
 
     public boolean isActive() {
@@ -64,7 +73,7 @@ public class Desktop {
     }
 
     public void remove() {
-	Validate.isTrue(isActive() && !fixed && !readonly,
+	Validate.isTrue(isActive() && !this.fixed && !this.readonly,
 		"Sólo se pueden eliminar escritorios activos y que no sean fijos ni de solo lectura");
 	setState(DesktopSatateEnum.DELETED);
     }
@@ -73,6 +82,29 @@ public class Desktop {
 	if (isActive()) {
 	    setOrder(order);
 	}
+    }
+
+    public void removeItem(DesktopItem item) {
+	Validate.isTrue(!getReadonly(), "No se pueden eliminar items de un escritorio de solo lectura");
+
+	items.remove(item);
+    }
+
+    public void moveItem(DesktopItem item, Desktop desktopTo) {
+	Validate.notNull(item);
+	Validate.notNull(desktopTo);
+	Validate.isTrue(this.getUserId().equals(desktopTo.getUserId()), "Sólo se pueden mover items entre escritorios del mismo usuario");
+
+	this.items.remove(item);
+	desktopTo.addNewItem(item);
+    }
+
+    private void addNewItem(DesktopItem item) {
+	Validate.isTrue(!this.fixed && !this.readonly, "No se pueden añadir items a un escritorio fijo o de solo lectura");
+
+	item.moveToDesktop(this.getDesktopId());
+	item.reorder(nextItemOrder());
+	this.items.add(item);
     }
 
     /**
@@ -142,8 +174,8 @@ public class Desktop {
 	this.state = state;
     }
 
-    public List<DesktopItem> getItems() {
-	return new ArrayList<>(items);
+    public Set<DesktopItem> getItems() {
+	return new HashSet<>(items);
     }
 
     private void setItems(Set<DesktopItem> items) {
