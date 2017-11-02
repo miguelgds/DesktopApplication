@@ -1,6 +1,7 @@
 package net.agata.desktopmodel.domain.desktop.entity;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -105,6 +106,27 @@ public class Desktop {
 	item.moveToDesktop(this.getDesktopId());
 	item.reorder(nextItemOrder());
 	this.items.add(item);
+    }
+
+    public void setItemAsFavourite(Short order) {
+	Validate.notNull(order);
+	
+	this.findItemByOrder(order)
+	    .ifPresent(DesktopItem::setAsFavourite);
+    }
+    
+    public void unsetItemAsFavourite(Short order) {
+	Validate.notNull(order);
+	
+	this.findItemByOrder(order)
+	    .ifPresent(DesktopItem::unsetAsFavourite);
+    }
+
+    private Optional<DesktopItem> findItemByOrder(Short order){
+	return this.items
+		   .stream()
+		   .filter(item -> item.getOrder().equals(order))
+		   .findAny();
     }
 
     /**

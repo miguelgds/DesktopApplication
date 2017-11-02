@@ -36,7 +36,10 @@ public class UserDesktopsTest {
 			new HashSet<>(Arrays.asList(
 				new DesktopItem(new DesktopID("1"), new IconID((short)1), new ColorID((short) 1), "PAGINA 1", new PageID(1), null, false, (short) 0)
 			))),
-		new Desktop(new DesktopID("2"), "FUNCIONALIDADES COMUNES", userId, (short) 1, true, true, DesktopSatateEnum.ACTIVE, new HashSet<>()),
+		new Desktop(new DesktopID("2"), "FUNCIONALIDADES COMUNES", userId, (short) 1, true, true, DesktopSatateEnum.ACTIVE, 
+			new HashSet<>(Arrays.asList(
+				new DesktopItem(new DesktopID("2"), new IconID((short)3), new ColorID((short) 3), "PAGINA 2", new PageID(2), null, true, (short) 0)
+			))),
 		new Desktop(new DesktopID("3"), "PANEL DE CONFIGURACION ", userId, (short) 2, true, true, DesktopSatateEnum.DELETED, new HashSet<>()),
 		new Desktop(new DesktopID("4"), "PANEL CUSTOMIZADO1     ", userId, (short) 3, false, true, DesktopSatateEnum.ACTIVE, new HashSet<>()),
 		new Desktop(new DesktopID("5"), "PANEL CUSTOMIZADO2     ", userId, (short) 4, false, false, DesktopSatateEnum.ACTIVE, 
@@ -101,6 +104,21 @@ public class UserDesktopsTest {
 		   			   .findAny()
 					   .map(d -> d.getItems().size())
 					   .orElse(0) == 2);
+    }
+
+    @Test
+    public void changeItemFavourite() {
+	DesktopID desktopId = new DesktopID("1");
+	Short order = (short) 0;
+	userDesktops.setItemAsFavourite(desktopId, order);
+
+	desktopRepository.findByUser(this.userId)
+	 		 .stream()
+	 		 .flatMap(d -> d.getItems()
+	 			        .stream()
+	 			        .filter(DesktopItem::getIsFavourite))
+	 		 .forEach(item -> Assert.assertTrue(item.getDesktopId().equals(desktopId)
+	 			 				&& item.getOrder().equals(order)));
     }
 
 }

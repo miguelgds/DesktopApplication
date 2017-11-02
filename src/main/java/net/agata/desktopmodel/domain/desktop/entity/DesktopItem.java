@@ -56,6 +56,18 @@ public class DesktopItem {
 	setDesktopId(desktopTo);
     }
 
+    public void unsetAsFavourite() {
+	if (getIsFavourite()) {
+	    setIsFavourite(false);
+	}
+    }
+
+    public void setAsFavourite() {
+	if (!getIsFavourite()) {
+	    setIsFavourite(true);
+	}
+    }
+
     /**
      * ACCESSORS
      */

@@ -111,6 +111,39 @@ public class UserDesktops {
 				     .collect(Collectors.toSet());
     }
 
+    public void setItemAsFavourite(DesktopID desktop, Short order) {
+	this.findUserDesktopActive(desktop)
+	    .ifPresent(d -> this.setItemAsFavourite(d, order));
+    }
+    
+    private void setItemAsFavourite(Desktop desktop, Short order) {
+	this.findFavourite()
+	    .ifPresent(item -> this.findUserDesktopActive(item.getDesktopId())
+		    		   .ifPresent(desktopForCurrentFavourite -> unsetDesktopItemAsFavourite(desktopForCurrentFavourite, item.getOrder())));
+
+	setDesktopItemAsFavourite(desktop, order);
+    }
+
+    private void setDesktopItemAsFavourite(Desktop desktop, Short order) {
+	desktop.setItemAsFavourite(order);
+	desktopRepository.update(desktop);
+    }
+    
+    private void unsetDesktopItemAsFavourite(Desktop desktop, Short order) {
+	desktop.unsetItemAsFavourite(order);
+	desktopRepository.update(desktop);
+    }
+
+    private Optional<DesktopItem> findFavourite() {
+	return this.userActiveDesktops()
+		   .stream()
+		   .flatMap(d -> d.getItems()
+			   	  .stream()
+			   	  .filter(DesktopItem::getIsFavourite))
+		   .findAny();
+    }
+
+
     /**
      * ACCESSORS
      */
