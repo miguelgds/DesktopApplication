@@ -135,6 +135,7 @@ public class UserDesktopsTest {
 
 	userDesktops.changeDesktopItemOrder(desktopId, itemOrderFrom, itemOrderTo);
 	
+	// TODO HACER UNA BUENA VALIDACION
 	desktopRepository.findByUser(this.userId)
 	 		 .stream()
 	 		 .filter(d -> d.getDesktopId().equals(desktopId))
@@ -149,6 +150,7 @@ public class UserDesktopsTest {
 
 	userDesktops.removeDesktopItem(desktopId, itemOrder);
 	
+	// TODO HACER UNA BUENA VALIDACION
 	desktopRepository.findByUser(this.userId)
 	 		 .stream()
 	 		 .filter(d -> d.getDesktopId().equals(desktopId))
@@ -162,11 +164,11 @@ public class UserDesktopsTest {
 	Boolean desktopFixed = false;
 	Boolean desktopReadonly = false;
 
-	DesktopID newDesktop = userDesktops.addNewDesktop(desktopName, desktopFixed, desktopReadonly);
+	Desktop newDesktop = userDesktops.addNewDesktop(desktopName, desktopFixed, desktopReadonly);
 	
 	Optional<Desktop> desktopCreated = desktopRepository.findByUser(this.userId)
 		   					    .stream()
-		   					    .filter(d -> d.getDesktopId().equals(newDesktop))
+		   					    .filter(d -> d.equals(newDesktop))
 		   					    .findAny();
 	Assert.assertTrue(desktopCreated.isPresent());
 	Assert.assertEquals(desktopCreated.get().getName(), desktopName);
@@ -175,6 +177,28 @@ public class UserDesktopsTest {
 	Assert.assertEquals(desktopCreated.get().getFixed(), desktopFixed);
 	Assert.assertEquals(desktopCreated.get().getReadonly(), desktopReadonly);
 	Assert.assertEquals(desktopCreated.get().getState(), DesktopSatateEnum.ACTIVE);
+    }
+
+    @Test
+    public void addPageToDesktop() {
+
+	DesktopID desktopId = new DesktopID("5");
+	IconID itemIcon = new IconID((short) 17);
+	ColorID itemColor = new ColorID((short) 7);
+	String itemName = "PAGINA PRUEBA MGDS";
+	PageID itemPageId = new PageID(77);
+
+	DesktopItem newItem = userDesktops.addPageToDesktop(desktopId, itemIcon, itemColor, itemName, itemPageId);
+	
+	Assert.assertTrue(desktopRepository.findByUser(this.userId)
+	 		 		   .stream()
+	 		 		   .filter(d -> d.getDesktopId().equals(desktopId))
+	 		 		   .findAny()
+	 		 		   .map(d -> d.getItems()
+	 		 			      .stream()
+	 		 			      .anyMatch(item -> item.equals(newItem)))
+	 		 		   .orElse(false));
+
     }
 
 

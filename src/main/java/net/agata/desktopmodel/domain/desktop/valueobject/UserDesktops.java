@@ -12,6 +12,9 @@ import io.vavr.control.Option;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
+import net.agata.desktopmodel.subdomain.ui.ColorID;
+import net.agata.desktopmodel.subdomain.ui.IconID;
+import net.agata.desktopmodel.subdomain.ui.PageID;
 import net.agata.desktopmodel.subdomain.user.UserID;
 import net.agata.desktopmodel.utils.exceptions.ExceptionUtils;
 
@@ -178,11 +181,10 @@ public class UserDesktops {
 	desktopRepository.update(desktop);
     }
 
-    public DesktopID addNewDesktop(String name, boolean fixed, boolean readonly) {
+    public Desktop addNewDesktop(String name, boolean fixed, boolean readonly) {
 	Validate.notEmpty(name);
 	
-	DesktopID desktopId = desktopRepository.nextId();
-	Desktop newDesktop = new Desktop(desktopId, 
+	Desktop newDesktop = new Desktop(desktopRepository.nextId(), 
 					 name, 
 					 this.userId, 
 					 this.nextDesktopOrder(), 
@@ -191,7 +193,7 @@ public class UserDesktops {
 					 DesktopSatateEnum.ACTIVE, 
 					 new HashSet<>());
 	desktopRepository.save(newDesktop);
-	return desktopId;
+	return newDesktop;
     }
     
     private Short nextDesktopOrder(){
@@ -202,6 +204,11 @@ public class UserDesktops {
 		   .map(max -> Integer.sum(max, 1))
 		   .orElse(0)
 		   .shortValue();
+    }
+
+    public DesktopItem addPageToDesktop(DesktopID desktopId, IconID itemIcon, ColorID itemColor, String itemName, PageID itemPageId) {
+	// TODO
+	return null;
     }
 
     /**
