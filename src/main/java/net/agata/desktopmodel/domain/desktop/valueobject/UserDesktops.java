@@ -143,6 +143,21 @@ public class UserDesktops {
 		   .findAny();
     }
 
+    public void changeDesktopItemOrder(DesktopID desktopId, Short itemOrderFrom, Short itemOrderTo) {
+	Validate.notNull(desktopId);
+	Validate.notNull(itemOrderFrom);
+	Validate.notNull(itemOrderTo);
+	
+	this.findUserDesktopActive(desktopId)
+	    .ifPresent(d -> changeDesktopItemOrder(d, itemOrderFrom, itemOrderTo));
+	
+    }
+
+
+    private void changeDesktopItemOrder(Desktop desktop, Short itemOrderFrom, Short itemOrderTo) {
+	desktop.reorderItem(itemOrderFrom, itemOrderTo);
+	desktopRepository.update(desktop);
+    }
 
     /**
      * ACCESSORS

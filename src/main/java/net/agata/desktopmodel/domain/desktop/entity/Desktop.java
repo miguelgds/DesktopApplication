@@ -1,6 +1,8 @@
 package net.agata.desktopmodel.domain.desktop.entity;
 
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -127,6 +129,35 @@ public class Desktop {
 		   .stream()
 		   .filter(item -> item.getOrder().equals(order))
 		   .findAny();
+    }
+
+    public void reorderItem(Short itemOrderFrom, Short itemOrderTo) {
+	Validate.isTrue(!this.readonly, "No se pueden mover items en escritorios de solo lectura");
+	
+	this.findItemByOrder(itemOrderFrom)
+		.ifPresent(itemToReorder -> this.reorderItemAnRelocateTheOthers(itemToReorder, itemOrderTo));
+    }
+    
+    private void reorderItemAnRelocateTheOthers(DesktopItem itemToReorder, Short itemOrderTo) {
+	List<DesktopItem> itemsToRelocate = this.items.stream()
+		  				     .filter(item -> !item.equals(itemToReorder))
+		  				     .collect(Collectors.toList());	    
+	itemToReorder.reorder(itemOrderTo);
+	for (DesktopItem desktopItemToReorder : itemsToRelocate) {
+	    if (desktopItemToReorder.getOrder().shortValue() >= itemOrderTo) {
+		desktopItemToReorder.reorder((short) (desktopItemToReorder.getOrder() + 1));
+	    }
+	}
+	itemsToRelocate.add(itemToReorder);
+	zipDesktopItemsOrder(itemsToRelocate);
+    }
+
+    private static void zipDesktopItemsOrder(List<DesktopItem> itemsToRelocate) {
+	itemsToRelocate.sort(Comparator.comparing(DesktopItem::getOrder));
+	int index = 0;
+	for (DesktopItem desktopItem : itemsToRelocate) {
+	    desktopItem.reorder((short) index++);
+	}
     }
 
     /**
