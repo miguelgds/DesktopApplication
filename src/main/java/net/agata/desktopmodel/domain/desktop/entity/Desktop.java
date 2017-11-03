@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
+import io.vavr.control.Option;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopSatateEnum;
@@ -16,6 +17,7 @@ import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
 import net.agata.desktopmodel.subdomain.ui.PageID;
 import net.agata.desktopmodel.subdomain.user.UserID;
+import net.agata.desktopmodel.utils.exceptions.ExceptionUtils;
 
 public class Desktop {
 
@@ -54,11 +56,13 @@ public class Desktop {
 
     public void addApplication(IconID iconId, ColorID colorId, String name, ApplicationID applicationId, Boolean isFavourite) {
 	Validate.isTrue(isActive(), "No se puede añadir una aplicación a un escritorio que no está activo");
+
 	this.items.add(new DesktopItem(this.desktopId, iconId, colorId, name, null, applicationId, isFavourite, nextItemOrder()));
     }
 
     public void addPage(IconID iconId, ColorID colorId, String name, PageID pageId, Boolean isFavourite) {
 	Validate.isTrue(isActive(), "No se puede añadir una página a un escritorio que no está activo");
+
 	this.items.add(new DesktopItem(this.desktopId, iconId, colorId, name, pageId, null, isFavourite, nextItemOrder()));
     }
 
@@ -78,6 +82,7 @@ public class Desktop {
     public void remove() {
 	Validate.isTrue(isActive() && !this.fixed && !this.readonly,
 		"Sólo se pueden eliminar escritorios activos y que no sean fijos ni de solo lectura");
+
 	setState(DesktopSatateEnum.DELETED);
     }
 
@@ -87,10 +92,13 @@ public class Desktop {
 	}
     }
 
-    public void removeItem(DesktopItem item) {
-	Validate.isTrue(!getReadonly(), "No se pueden eliminar items de un escritorio de solo lectura");
+    public void removeItem(Short order) {
+	Validate.isTrue(isActive() && !this.readonly,
+		"Sólo se puede eliminar un item si el escritorio está activo y no es de solo lectura");
 
-	items.remove(item);
+	this.findItemByOrder(order)
+	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con orden %d para el escritorio.", order))
+	    .peek(items::remove);
     }
 
     public void moveItem(DesktopItem item, Desktop desktopTo) {
@@ -114,28 +122,38 @@ public class Desktop {
 	Validate.notNull(order);
 	
 	this.findItemByOrder(order)
-	    .ifPresent(DesktopItem::setAsFavourite);
+	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con orden %d para el escritorio.", order))
+	    .peek(DesktopItem::setAsFavourite);
     }
     
     public void unsetItemAsFavourite(Short order) {
 	Validate.notNull(order);
 	
 	this.findItemByOrder(order)
-	    .ifPresent(DesktopItem::unsetAsFavourite);
+	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con orden %d para el escritorio.", order))
+	    .peek(DesktopItem::unsetAsFavourite);
     }
 
-    private Optional<DesktopItem> findItemByOrder(Short order){
-	return this.items
+    public Optional<DesktopItem> findItem(Short order){
+	return this.getItems()
 		   .stream()
 		   .filter(item -> item.getOrder().equals(order))
-		   .findAny();
+		   .findAny();	
+    }
+    
+    private Option<DesktopItem> findItemByOrder(Short order){
+	return Option.ofOptional(this.items
+		   		     .stream()
+		   		     .filter(item -> item.getOrder().equals(order))
+		   		     .findAny());
     }
 
     public void reorderItem(Short itemOrderFrom, Short itemOrderTo) {
 	Validate.isTrue(!this.readonly, "No se pueden mover items en escritorios de solo lectura");
 	
 	this.findItemByOrder(itemOrderFrom)
-		.ifPresent(itemToReorder -> this.reorderItemAnRelocateTheOthers(itemToReorder, itemOrderTo));
+	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con orden %d para el escritorio.", order))
+	    .peek(itemToReorder -> this.reorderItemAnRelocateTheOthers(itemToReorder, itemOrderTo));
     }
     
     private void reorderItemAnRelocateTheOthers(DesktopItem itemToReorder, Short itemOrderTo) {

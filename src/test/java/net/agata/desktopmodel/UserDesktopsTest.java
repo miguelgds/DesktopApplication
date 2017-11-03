@@ -141,4 +141,19 @@ public class UserDesktopsTest {
 	 		 .forEach(System.out::println);
     }
 
+    @Test
+    public void removeDesktopItem() {
+	DesktopID desktopId = new DesktopID("2");
+	Short itemOrder = (short) 5;
+
+	userDesktops.removeDesktopItem(desktopId, itemOrder);
+	
+	desktopRepository.findByUser(this.userId)
+	 		 .stream()
+	 		 .filter(d -> d.getDesktopId().equals(desktopId))
+	 		 .flatMap(d -> d.getItems().stream())
+	 		 .forEach(System.out::println);
+    }
+
+
 }

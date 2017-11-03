@@ -2,16 +2,17 @@ package net.agata.desktopmodel.domain.desktop.valueobject;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
+import io.vavr.control.Option;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
 import net.agata.desktopmodel.subdomain.user.UserID;
+import net.agata.desktopmodel.utils.exceptions.ExceptionUtils;
 
 public class UserDesktops {
     private UserID userId;
@@ -32,7 +33,8 @@ public class UserDesktops {
 	Validate.notNull(order);
 	
 	this.findUserDesktopActive(desktopId)
-	    .ifPresent(d -> reorderDesktopAndRelocateTheOthers(d, order));
+	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
+	    .peek(d -> reorderDesktopAndRelocateTheOthers(d, order));
     }
 
     private void reorderDesktopAndRelocateTheOthers(Desktop desktopToRelocate, Short order) {
@@ -65,7 +67,8 @@ public class UserDesktops {
 	Validate.notNull(desktopId);
 
 	this.findUserDesktopActive(desktopId)
-	    .ifPresent(this::removeDesktop);	
+	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
+	    .peek(this::removeDesktop);	
     }
     
     private void removeDesktop(Desktop desktop) {
@@ -73,11 +76,11 @@ public class UserDesktops {
 	desktopRepository.update(desktop);
     }
 
-    private Optional<Desktop> findUserDesktopActive(DesktopID desktopId) {
-	return this.userActiveDesktops()
-		   .stream()
-		   .filter(d -> d.getDesktopId().equals(desktopId))
-		   .findAny();
+    private Option<Desktop> findUserDesktopActive(DesktopID desktopId) {
+	return Option.ofOptional(this.userActiveDesktops()
+		   		     .stream()
+		   		     .filter(d -> d.getDesktopId().equals(desktopId))
+		   		     .findAny());
     }
 
     public void moveItem(DesktopID desktopFrom, Short itemToMoveOrder, DesktopID desktopTo) {
@@ -86,23 +89,22 @@ public class UserDesktops {
 	Validate.notNull(desktopTo);
 
 	Desktop desktopSource = this.findUserDesktopActive(desktopFrom)
-		    .orElseThrow(() -> new IllegalArgumentException(String.format("El usuario no tiene asignado un escritorio con id: %s", desktopFrom)));
+		    .getOrElseThrow(() -> new IllegalArgumentException(String.format("El usuario no tiene asignado un escritorio con id: %s", desktopFrom)));
 	
 	Desktop desktopTarget = this.findUserDesktopActive(desktopTo)
-		    .orElseThrow(() -> new IllegalArgumentException(String.format("El usuario no tiene asignado un escritorio con id: %s", desktopTo)));
-	
-	DesktopItem itemToMove = Optional.of(desktopSource)
-				     	 .map(Desktop::getItems)
-				     	 .flatMap(items -> items.stream()
-					     		    .filter(i -> i.getOrder().equals(itemToMoveOrder))
-					     		    .findAny())
-				     	 .orElseThrow(() -> new IllegalArgumentException(
-					     String.format("No existe un item para el escritorio %s con orden %d", desktopFrom, itemToMoveOrder)));
-	
+		    .getOrElseThrow(() -> new IllegalArgumentException(String.format("El usuario no tiene asignado un escritorio con id: %s", desktopTo)));
+
+	Option.ofOptional(desktopSource.findItem(itemToMoveOrder))
+	      .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No existe un item para el escritorio %s con orden %d", desktopFrom, itemToMoveOrder))
+	      .peek(itemToMove -> moveItem(desktopSource, itemToMove, desktopTarget));
+    }
+    
+    private void moveItem(Desktop desktopSource, DesktopItem itemToMove, Desktop desktopTarget) {
 	desktopSource.moveItem(itemToMove, desktopTarget);
 	desktopRepository.update(desktopSource);
 	desktopRepository.update(desktopTarget);
     }
+    
     
     private Set<Desktop> userActiveDesktops() {
 	return this.desktopRepository.findByUser(this.userId)
@@ -111,15 +113,16 @@ public class UserDesktops {
 				     .collect(Collectors.toSet());
     }
 
-    public void setItemAsFavourite(DesktopID desktop, Short order) {
-	this.findUserDesktopActive(desktop)
-	    .ifPresent(d -> this.setItemAsFavourite(d, order));
+    public void setItemAsFavourite(DesktopID desktopId, Short order) {
+	this.findUserDesktopActive(desktopId)
+	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
+	    .peek(d -> this.setItemAsFavourite(d, order));
     }
     
     private void setItemAsFavourite(Desktop desktop, Short order) {
-	this.findFavourite()
-	    .ifPresent(item -> this.findUserDesktopActive(item.getDesktopId())
-		    		   .ifPresent(desktopForCurrentFavourite -> unsetDesktopItemAsFavourite(desktopForCurrentFavourite, item.getOrder())));
+	this.findFavourite()	    
+	    .peek(item -> this.findUserDesktopActive(item.getDesktopId())
+		    	      .peek(desktopForCurrentFavourite -> unsetDesktopItemAsFavourite(desktopForCurrentFavourite, item.getOrder())));
 
 	setDesktopItemAsFavourite(desktop, order);
     }
@@ -134,13 +137,13 @@ public class UserDesktops {
 	desktopRepository.update(desktop);
     }
 
-    private Optional<DesktopItem> findFavourite() {
-	return this.userActiveDesktops()
-		   .stream()
-		   .flatMap(d -> d.getItems()
-			   	  .stream()
-			   	  .filter(DesktopItem::getIsFavourite))
-		   .findAny();
+    private Option<DesktopItem> findFavourite() {
+	return Option.ofOptional(this.userActiveDesktops()
+		   		     .stream()
+		   		     .flatMap(d -> d.getItems()
+		   			     	    .stream()
+		   			     	    .filter(DesktopItem::getIsFavourite))
+		   		     .findAny());
     }
 
     public void changeDesktopItemOrder(DesktopID desktopId, Short itemOrderFrom, Short itemOrderTo) {
@@ -149,13 +152,28 @@ public class UserDesktops {
 	Validate.notNull(itemOrderTo);
 	
 	this.findUserDesktopActive(desktopId)
-	    .ifPresent(d -> changeDesktopItemOrder(d, itemOrderFrom, itemOrderTo));
+	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
+	    .peek(d -> changeDesktopItemOrder(d, itemOrderFrom, itemOrderTo));
 	
     }
 
 
     private void changeDesktopItemOrder(Desktop desktop, Short itemOrderFrom, Short itemOrderTo) {
 	desktop.reorderItem(itemOrderFrom, itemOrderTo);
+	desktopRepository.update(desktop);
+    }
+
+    public void removeDesktopItem(DesktopID desktopId, Short itemOrder) {
+	Validate.notNull(desktopId);
+	Validate.notNull(itemOrder);
+
+	this.findUserDesktopActive(desktopId)
+	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
+	    .peek(d -> removeDesktopItem(d, itemOrder));
+    }
+
+    private void removeDesktopItem(Desktop desktop, Short itemOrder) {
+	desktop.removeItem(itemOrder);
 	desktopRepository.update(desktop);
     }
 
