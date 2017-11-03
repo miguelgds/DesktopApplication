@@ -1,6 +1,7 @@
 package net.agata.desktopmodel.domain.desktop.valueobject;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -175,6 +176,32 @@ public class UserDesktops {
     private void removeDesktopItem(Desktop desktop, Short itemOrder) {
 	desktop.removeItem(itemOrder);
 	desktopRepository.update(desktop);
+    }
+
+    public DesktopID addNewDesktop(String name, boolean fixed, boolean readonly) {
+	Validate.notEmpty(name);
+	
+	DesktopID desktopId = desktopRepository.nextId();
+	Desktop newDesktop = new Desktop(desktopId, 
+					 name, 
+					 this.userId, 
+					 this.nextDesktopOrder(), 
+					 fixed, 
+					 readonly, 
+					 DesktopSatateEnum.ACTIVE, 
+					 new HashSet<>());
+	desktopRepository.save(newDesktop);
+	return desktopId;
+    }
+    
+    private Short nextDesktopOrder(){
+	return this.userActiveDesktops()
+		   .stream()
+		   .map(Desktop::getOrder)
+		   .max(Integer::max)
+		   .map(max -> Integer.sum(max, 1))
+		   .orElse(0)
+		   .shortValue();
     }
 
     /**

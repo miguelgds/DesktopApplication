@@ -8,6 +8,8 @@ import net.agata.desktopmodel.subdomain.user.UserID;
 
 public interface DesktopRepository {
 
+    DesktopID nextId();
+
     Collection<Desktop> findAll();
 
     Collection<Desktop> findByUser(UserID userId);

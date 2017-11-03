@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
@@ -22,6 +23,11 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
     public DesktopRepositoryInMemoryImpl(Set<Desktop> initialDesktops) {
 	this();
 	initialDesktops.forEach(this::save);
+    }
+
+    @Override
+    public DesktopID nextId() {
+	return new DesktopID(UUID.randomUUID().toString());
     }
 
     @Override

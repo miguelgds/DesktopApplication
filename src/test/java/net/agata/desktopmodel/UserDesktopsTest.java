@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -153,6 +154,27 @@ public class UserDesktopsTest {
 	 		 .filter(d -> d.getDesktopId().equals(desktopId))
 	 		 .flatMap(d -> d.getItems().stream())
 	 		 .forEach(System.out::println);
+    }
+
+    @Test
+    public void createDesktop() {
+	String desktopName = "DESKTOP PRUEBA MGDS";
+	Boolean desktopFixed = false;
+	Boolean desktopReadonly = false;
+
+	DesktopID newDesktop = userDesktops.addNewDesktop(desktopName, desktopFixed, desktopReadonly);
+	
+	Optional<Desktop> desktopCreated = desktopRepository.findByUser(this.userId)
+		   					    .stream()
+		   					    .filter(d -> d.getDesktopId().equals(newDesktop))
+		   					    .findAny();
+	Assert.assertTrue(desktopCreated.isPresent());
+	Assert.assertEquals(desktopCreated.get().getName(), desktopName);
+	Assert.assertEquals(desktopCreated.get().getUserId(), this.userId);
+	Assert.assertNotNull(desktopCreated.get().getOrder());
+	Assert.assertEquals(desktopCreated.get().getFixed(), desktopFixed);
+	Assert.assertEquals(desktopCreated.get().getReadonly(), desktopReadonly);
+	Assert.assertEquals(desktopCreated.get().getState(), DesktopSatateEnum.ACTIVE);
     }
 
 
