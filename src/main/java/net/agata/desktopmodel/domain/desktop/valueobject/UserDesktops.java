@@ -1,6 +1,5 @@
 package net.agata.desktopmodel.domain.desktop.valueobject;
 
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,6 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.Validate;
 
 import io.vavr.control.Option;
+import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
@@ -44,27 +44,15 @@ public class UserDesktops {
     private void reorderDesktopAndRelocateTheOthers(Desktop desktopToRelocate, Short order) {
 	Validate.isTrue(desktopToRelocate.isActive(), "No se puede recolocar un escritorio eliminado");
 
+	DisplacementMode displacementMode = DisplacementMode.from(desktopToRelocate.getOrder(), order);
 	desktopToRelocate.reorder(order);
 	List<Desktop> desktopsToRelocate = this.userActiveDesktops()
 					      .stream()
 					      .filter(d -> !d.equals(desktopToRelocate))
 					      .collect(Collectors.toList());
-	for (Desktop desktop : desktopsToRelocate) {
-	    if (desktop.getOrder().shortValue() >= order) {
-		desktop.reorder((short) (desktop.getOrder() + 1));
-	    }
-	}
-	desktopsToRelocate.add(desktopToRelocate);
-	zipDesktopsOrder(desktopsToRelocate);
-    }
-    
-    private void zipDesktopsOrder(List<Desktop> desktopsToRelocate) {
-	desktopsToRelocate.sort(Comparator.comparing(Desktop::getOrder));
-	int index = 0;
-	for (Desktop desktop : desktopsToRelocate) {
-	    desktop.reorder((short) index++);
-	    desktopRepository.update(desktop);
-	}
+	displacementMode.reorderDesktopsFromPivot(desktopsToRelocate, desktopToRelocate);
+	desktopsToRelocate.stream()
+			  .forEach(desktopRepository::update);
     }
 
     public void removeDesktop(DesktopID desktopId) {
@@ -207,8 +195,30 @@ public class UserDesktops {
     }
 
     public DesktopItem addPageToDesktop(DesktopID desktopId, IconID itemIcon, ColorID itemColor, String itemName, PageID itemPageId) {
-	// TODO
-	return null;
+	return this.findUserDesktopActive(desktopId)
+		   .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
+		   .map(d -> addPageToDesktop(d, itemIcon, itemColor, itemName, itemPageId))
+		   .getOrNull();	
+    }
+
+    private DesktopItem addPageToDesktop(Desktop desktop, IconID itemIcon, ColorID itemColor, String itemName, PageID itemPageId) {
+	DesktopItem newItem = desktop.addPage(itemIcon, itemColor, itemName, itemPageId);
+	desktopRepository.update(desktop);
+	return newItem;
+    }
+    
+    public DesktopItem addApplicationToDesktop(DesktopID desktopId, IconID itemIcon, ColorID itemColor, String itemName,
+	    ApplicationID itemApplicationId) {
+	return this.findUserDesktopActive(desktopId)
+		   .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
+		   .map(d -> addApplicationToDesktop(d, itemIcon, itemColor, itemName, itemApplicationId))
+		   .getOrNull();
+    }
+    
+    private DesktopItem addApplicationToDesktop(Desktop desktop, IconID itemIcon, ColorID itemColor, String itemName, ApplicationID itemApplicationId) {
+	DesktopItem newItem = desktop.addApplication(itemIcon, itemColor, itemName, itemApplicationId);
+	desktopRepository.update(desktop);
+	return newItem;
     }
 
     /**

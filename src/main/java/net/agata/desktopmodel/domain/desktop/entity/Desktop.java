@@ -1,18 +1,19 @@
 package net.agata.desktopmodel.domain.desktop.entity;
 
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.Validate;
 
 import io.vavr.control.Option;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopSatateEnum;
+import net.agata.desktopmodel.domain.desktop.valueobject.DisplacementMode;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
 import net.agata.desktopmodel.subdomain.ui.PageID;
@@ -54,16 +55,20 @@ public class Desktop {
      * BUSINESS LOGIC
      */
 
-    public void addApplication(IconID iconId, ColorID colorId, String name, ApplicationID applicationId, Boolean isFavourite) {
+    public DesktopItem addApplication(IconID iconId, ColorID colorId, String name, ApplicationID applicationId) {
 	Validate.isTrue(isActive(), "No se puede añadir una aplicación a un escritorio que no está activo");
 
-	this.items.add(new DesktopItem(this.desktopId, iconId, colorId, name, null, applicationId, isFavourite, nextItemOrder()));
+	DesktopItem newItem = new DesktopItem(this.desktopId, iconId, colorId, name, null, applicationId, false, nextItemOrder());
+	this.items.add(newItem);
+	return newItem;
     }
 
-    public void addPage(IconID iconId, ColorID colorId, String name, PageID pageId, Boolean isFavourite) {
+    public DesktopItem addPage(IconID iconId, ColorID colorId, String name, PageID pageId) {
 	Validate.isTrue(isActive(), "No se puede añadir una página a un escritorio que no está activo");
 
-	this.items.add(new DesktopItem(this.desktopId, iconId, colorId, name, pageId, null, isFavourite, nextItemOrder()));
+	DesktopItem newItem = new DesktopItem(this.desktopId, iconId, colorId, name, pageId, null, false, nextItemOrder());
+	this.items.add(newItem);
+	return newItem;
     }
 
     private Short nextItemOrder() {
@@ -150,32 +155,40 @@ public class Desktop {
 
     public void reorderItem(Short itemOrderFrom, Short itemOrderTo) {
 	Validate.isTrue(!this.readonly, "No se pueden mover items en escritorios de solo lectura");
+	Range<Short> itemsOrderRange = currentItemsOrderRange();
+	Validate.isTrue(itemsOrderRange.contains(itemOrderFrom), "El orden origen (%d) debería estar entre %d y %d", itemOrderFrom,
+		itemsOrderRange.getMinimum(), itemsOrderRange.getMaximum());
+	Validate.isTrue(itemsOrderRange.contains(itemOrderTo), "El orden destino (%d) debería estar entre %d y %d", itemOrderTo,
+		itemsOrderRange.getMinimum(), itemsOrderRange.getMaximum());
 	
 	this.findItemByOrder(itemOrderFrom)
 	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con orden %d para el escritorio.", order))
 	    .peek(itemToReorder -> this.reorderItemAnRelocateTheOthers(itemToReorder, itemOrderTo));
     }
     
+    private Range<Short> currentItemsOrderRange() {
+	Short min = (short) 0;
+	Short max = (short) 0;
+	for (DesktopItem desktopItem : items) {
+	    short itemOrder = desktopItem.getOrder().shortValue();
+
+	    if (itemOrder < min) {
+		min = itemOrder;
+	    }
+	    if (itemOrder > max) {
+		max = itemOrder;
+	    }
+	}
+	return Range.between(min, max);
+    }
+
     private void reorderItemAnRelocateTheOthers(DesktopItem itemToReorder, Short itemOrderTo) {
 	List<DesktopItem> itemsToRelocate = this.items.stream()
 		  				     .filter(item -> !item.equals(itemToReorder))
 		  				     .collect(Collectors.toList());	    
+	DisplacementMode displacementMode = DisplacementMode.from(itemToReorder.getOrder(), itemOrderTo);
 	itemToReorder.reorder(itemOrderTo);
-	for (DesktopItem desktopItemToReorder : itemsToRelocate) {
-	    if (desktopItemToReorder.getOrder().shortValue() >= itemOrderTo) {
-		desktopItemToReorder.reorder((short) (desktopItemToReorder.getOrder() + 1));
-	    }
-	}
-	itemsToRelocate.add(itemToReorder);
-	zipDesktopItemsOrder(itemsToRelocate);
-    }
-
-    private static void zipDesktopItemsOrder(List<DesktopItem> itemsToRelocate) {
-	itemsToRelocate.sort(Comparator.comparing(DesktopItem::getOrder));
-	int index = 0;
-	for (DesktopItem desktopItem : itemsToRelocate) {
-	    desktopItem.reorder((short) index++);
-	}
+	displacementMode.reorderItemsFromPivot(itemsToRelocate, itemToReorder);
     }
 
     /**
