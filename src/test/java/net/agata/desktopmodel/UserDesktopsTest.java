@@ -54,16 +54,16 @@ public class UserDesktopsTest {
 	super();
 	userId = new UserID(1);
 	
-	desktop1_item0 = new DesktopItem(desktop1, new IconID((short) 1), new ColorID((short) 1), "PAGINA 1", new PageID(1), null, false, (short) 0);
+	desktop1_item0 = new DesktopItem(desktop1, new IconID((short) 1), new ColorID((short) 1), new PageID(1), null, false, (short) 0);
 	
-	desktop2_item0 = new DesktopItem(desktop2, new IconID((short) 7), new ColorID((short) 1), "ACTIVOS", new PageID(7), null, false, (short) 0);
-	desktop2_item1 = new DesktopItem(desktop2, new IconID((short) 6), new ColorID((short) 2), "ALERTAS", new PageID(4), null, false, (short) 1);
-	desktop2_item2 = new DesktopItem(desktop2, new IconID((short) 1), new ColorID((short) 5), "INFORMES", new PageID(3), null, false, (short) 2);
-	desktop2_item3 = new DesktopItem(desktop2, new IconID((short) 5), new ColorID((short) 6), "CRISIS", new PageID(6), null, false, (short) 3);
-	desktop2_item4 = new DesktopItem(desktop2, new IconID((short) 8), new ColorID((short) 2), "PROPIEDADES MANUALES", new PageID(8), null, false, (short) 4);
-	desktop2_item5 = new DesktopItem(desktop2, new IconID((short) 3), new ColorID((short) 3), "TORRES SUMINISTRO", new PageID(2), null, true, (short) 5);
+	desktop2_item0 = new DesktopItem(desktop2, new IconID((short) 7), new ColorID((short) 1), new PageID(7), null, false, (short) 0);
+	desktop2_item1 = new DesktopItem(desktop2, new IconID((short) 6), new ColorID((short) 2), new PageID(4), null, false, (short) 1);
+	desktop2_item2 = new DesktopItem(desktop2, new IconID((short) 1), new ColorID((short) 5), new PageID(3), null, false, (short) 2);
+	desktop2_item3 = new DesktopItem(desktop2, new IconID((short) 5), new ColorID((short) 6), new PageID(6), null, false, (short) 3);
+	desktop2_item4 = new DesktopItem(desktop2, new IconID((short) 8), new ColorID((short) 2), new PageID(8), null, false, (short) 4);
+	desktop2_item5 = new DesktopItem(desktop2, new IconID((short) 3), new ColorID((short) 3), new PageID(2), null, true, (short) 5);
 	
-	desktop5_item0 = new DesktopItem(desktop5, new IconID((short) 2), new ColorID((short) 2), "APP 1", null, new ApplicationID("ID"), false, (short) 0);
+	desktop5_item0 = new DesktopItem(desktop5, new IconID((short) 2), new ColorID((short) 2), null, new ApplicationID("ID"), false, (short) 0);
 	
 	desktopRepository = new DesktopRepositoryInMemoryImpl(new HashSet<>(Arrays.asList(
 		new Desktop(desktop1, "PANEL DE USUARIO       ", userId, (short) 0, true, true, DesktopSatateEnum.ACTIVE, 
@@ -185,7 +185,6 @@ public class UserDesktopsTest {
 	return Objects.equals(item1.getDesktopId(), item2.getDesktopId())
 		&& Objects.equals(item1.getIconId(), item2.getIconId())
 		&& Objects.equals(item1.getColorId(), item2.getColorId())
-		&& Objects.equals(item1.getName(), item2.getName())
 		&& Objects.equals(item1.getPageId(), item2.getPageId())
 		&& Objects.equals(item1.getApplicationId(), item2.getApplicationId())
 		&& Objects.equals(item1.getIsFavourite(), item2.getIsFavourite());
@@ -216,7 +215,6 @@ public class UserDesktopsTest {
 	return Objects.equals(item1.getDesktopId(), item2.getDesktopId())
 		&& Objects.equals(item1.getIconId(), item2.getIconId())
 		&& Objects.equals(item1.getColorId(), item2.getColorId())
-		&& Objects.equals(item1.getName(), item2.getName())
 		&& Objects.equals(item1.getPageId(), item2.getPageId())
 		&& Objects.equals(item1.getApplicationId(), item2.getApplicationId())
 		&& Objects.equals(item1.getIsFavourite(), item2.getIsFavourite())
@@ -250,10 +248,9 @@ public class UserDesktopsTest {
 	DesktopID desktopId = desktop5;
 	IconID itemIcon = new IconID((short) 17);
 	ColorID itemColor = new ColorID((short) 7);
-	String itemName = "PAGINA PRUEBA MGDS";
 	PageID itemPageId = new PageID(77);
 
-	DesktopItem newItem = userDesktops.addPageToDesktop(desktopId, itemIcon, itemColor, itemName, itemPageId);
+	DesktopItem newItem = userDesktops.addPageToDesktop(desktopId, itemIcon, itemColor, itemPageId);
 	
 	Optional<DesktopItem> desktopItemCreated = desktopRepository.findByUser(this.userId)
 	 		 		   .stream()
@@ -267,7 +264,6 @@ public class UserDesktopsTest {
 	Assert.assertTrue(desktopItemCreated.isPresent());
 	Assert.assertEquals(desktopItemCreated.get().getIconId(), itemIcon);
 	Assert.assertEquals(desktopItemCreated.get().getColorId(), itemColor);
-	Assert.assertEquals(desktopItemCreated.get().getName(), itemName);
 	Assert.assertEquals(desktopItemCreated.get().getPageId(), itemPageId);
 	Assert.assertEquals(desktopItemCreated.get().getIsFavourite(), false);
     }
@@ -278,10 +274,9 @@ public class UserDesktopsTest {
 	DesktopID desktopId = desktop5;
 	IconID itemIcon = new IconID((short) 17);
 	ColorID itemColor = new ColorID((short) 7);
-	String itemName = "APLICACION PRUEBA MGDS";
 	ApplicationID itemApplicationId = new ApplicationID("898");
 
-	DesktopItem newItem = userDesktops.addApplicationToDesktop(desktopId, itemIcon, itemColor, itemName, itemApplicationId);
+	DesktopItem newItem = userDesktops.addApplicationToDesktop(desktopId, itemIcon, itemColor, itemApplicationId);
 	
 	Optional<DesktopItem> desktopItemCreated = desktopRepository.findByUser(this.userId)
 	 		 		   .stream()
@@ -295,7 +290,6 @@ public class UserDesktopsTest {
 	Assert.assertTrue(desktopItemCreated.isPresent());
 	Assert.assertEquals(desktopItemCreated.get().getIconId(), itemIcon);
 	Assert.assertEquals(desktopItemCreated.get().getColorId(), itemColor);
-	Assert.assertEquals(desktopItemCreated.get().getName(), itemName);
 	Assert.assertEquals(desktopItemCreated.get().getApplicationId(), itemApplicationId);
 	Assert.assertEquals(desktopItemCreated.get().getIsFavourite(), false);
     }

@@ -13,19 +13,17 @@ public class DesktopItem {
     private DesktopID desktopId;
     private IconID iconId;
     private ColorID colorId;
-    private String name;
     private PageID pageId;
     private ApplicationID applicationId;
     private Boolean isFavourite;
     private Short order;
 
-    public DesktopItem(DesktopID desktopId, IconID iconId, ColorID colorId, String name, PageID pageId, ApplicationID applicationId,
+    public DesktopItem(DesktopID desktopId, IconID iconId, ColorID colorId, PageID pageId, ApplicationID applicationId,
 	    Boolean isFavourite, Short order) {
 	super();
 	setDesktopId(desktopId);
 	setIconId(iconId);
 	setColorId(colorId);
-	setName(name);
 	Validate.isTrue(pageId != null || applicationId != null);
 	setPageId(pageId);
 	setApplicationId(applicationId);
@@ -34,7 +32,7 @@ public class DesktopItem {
     }
     
     public DesktopItem(DesktopItem item){
-	this(item.getDesktopId(), item.getIconId(), item.getColorId(), item.getName(), item.getPageId(), item.getApplicationId(), item.getIsFavourite(), item.getOrder());
+	this(item.getDesktopId(), item.getIconId(), item.getColorId(), item.getPageId(), item.getApplicationId(), item.getIsFavourite(), item.getOrder());
     }
 
     /**
@@ -97,15 +95,6 @@ public class DesktopItem {
     private void setColorId(ColorID colorId) {
 	Validate.notNull(colorId);
 	this.colorId = colorId;
-    }
-
-    public String getName() {
-	return name;
-    }
-
-    private void setName(String name) {
-	Validate.notBlank(name);
-	this.name = name;
     }
 
     public PageID getPageId() {
@@ -175,8 +164,8 @@ public class DesktopItem {
 
     @Override
     public String toString() {
-	return "DesktopItem [desktopId=" + desktopId + ", iconId=" + iconId + ", colorId=" + colorId + ", name=" + name + ", pageId="
-		+ pageId + ", applicationId=" + applicationId + ", isFavourite=" + isFavourite + ", order=" + order + "]";
+	return "DesktopItem [desktopId=" + desktopId + ", iconId=" + iconId + ", colorId=" + colorId + ", pageId=" + pageId
+		+ ", applicationId=" + applicationId + ", isFavourite=" + isFavourite + ", order=" + order + "]";
     }
 
 }

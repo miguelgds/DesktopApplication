@@ -68,7 +68,7 @@ public class DesktopTest {
 	Desktop desktop = new Desktop(this.desktopId, this.name, this.userId, this.order, this.fixed, this.readonly, this.state,
 		this.items);
 	ApplicationID appId = new ApplicationID(UUID.randomUUID().toString());
-	desktop.addApplication(new IconID((short) 1), new ColorID((short) 2), "APPLICATION 1", appId);
+	desktop.addApplication(new IconID((short) 1), new ColorID((short) 2), appId);
 	Assert.assertTrue(desktop.getItems().size() == 1);
 	Assert.assertTrue(desktop.getItems()
 				 .stream()
@@ -81,7 +81,7 @@ public class DesktopTest {
 	Desktop desktop = new Desktop(this.desktopId, this.name, this.userId, this.order, this.fixed, this.readonly, this.state,
 		this.items);
 	PageID pageId = new PageID(1);
-	desktop.addPage(new IconID((short) 1), new ColorID((short) 2), "PAGE 1", pageId);
+	desktop.addPage(new IconID((short) 1), new ColorID((short) 2), pageId);
 	Assert.assertTrue(desktop.getItems().size() == 1);
 	Assert.assertTrue(desktop.getItems()
 				 .stream()

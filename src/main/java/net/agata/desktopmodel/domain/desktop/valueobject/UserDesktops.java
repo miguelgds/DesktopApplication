@@ -194,29 +194,28 @@ public class UserDesktops {
 		   .shortValue();
     }
 
-    public DesktopItem addPageToDesktop(DesktopID desktopId, IconID itemIcon, ColorID itemColor, String itemName, PageID itemPageId) {
+    public DesktopItem addPageToDesktop(DesktopID desktopId, IconID itemIcon, ColorID itemColor, PageID itemPageId) {
 	return this.findUserDesktopActive(desktopId)
 		   .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
-		   .map(d -> addPageToDesktop(d, itemIcon, itemColor, itemName, itemPageId))
+		   .map(d -> addPageToDesktop(d, itemIcon, itemColor, itemPageId))
 		   .getOrNull();	
     }
 
-    private DesktopItem addPageToDesktop(Desktop desktop, IconID itemIcon, ColorID itemColor, String itemName, PageID itemPageId) {
-	DesktopItem newItem = desktop.addPage(itemIcon, itemColor, itemName, itemPageId);
+    private DesktopItem addPageToDesktop(Desktop desktop, IconID itemIcon, ColorID itemColor, PageID itemPageId) {
+	DesktopItem newItem = desktop.addPage(itemIcon, itemColor, itemPageId);
 	desktopRepository.update(desktop);
 	return newItem;
     }
     
-    public DesktopItem addApplicationToDesktop(DesktopID desktopId, IconID itemIcon, ColorID itemColor, String itemName,
-	    ApplicationID itemApplicationId) {
+    public DesktopItem addApplicationToDesktop(DesktopID desktopId, IconID itemIcon, ColorID itemColor, ApplicationID itemApplicationId) {
 	return this.findUserDesktopActive(desktopId)
 		   .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
-		   .map(d -> addApplicationToDesktop(d, itemIcon, itemColor, itemName, itemApplicationId))
+		   .map(d -> addApplicationToDesktop(d, itemIcon, itemColor, itemApplicationId))
 		   .getOrNull();
     }
     
-    private DesktopItem addApplicationToDesktop(Desktop desktop, IconID itemIcon, ColorID itemColor, String itemName, ApplicationID itemApplicationId) {
-	DesktopItem newItem = desktop.addApplication(itemIcon, itemColor, itemName, itemApplicationId);
+    private DesktopItem addApplicationToDesktop(Desktop desktop, IconID itemIcon, ColorID itemColor, ApplicationID itemApplicationId) {
+	DesktopItem newItem = desktop.addApplication(itemIcon, itemColor, itemApplicationId);
 	desktopRepository.update(desktop);
 	return newItem;
     }
