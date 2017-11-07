@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
+
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
@@ -61,7 +63,13 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 
     @Override
     public void update(Desktop desktop) {
-	datasource.put(desktop.getDesktopId(), desktop);
+	try {
+	    FieldUtils.writeDeclaredField(desktop, "version", desktop.getVersion() + 1L, true);
+	    datasource.put(desktop.getDesktopId(), desktop);
+	} catch (Exception e) {
+	    throw new RuntimeException(e);
+	}
+	
     }
 
 }

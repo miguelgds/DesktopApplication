@@ -30,8 +30,10 @@ public class Desktop {
     private Boolean readonly;
     private DesktopSatateEnum state;
     private Set<DesktopItem> items = new HashSet<>();
+    private Long version;
 
-    public Desktop(DesktopID desktopId, String name, UserID userId, Short order, Boolean fixed, Boolean readonly, DesktopSatateEnum state, Set<DesktopItem> items) {
+    public Desktop(DesktopID desktopId, String name, UserID userId, Short order, Boolean fixed, Boolean readonly, DesktopSatateEnum state,
+	    Set<DesktopItem> items) {
 	super();
 	setDesktopId(desktopId);
 	setName(name);
@@ -41,6 +43,7 @@ public class Desktop {
 	setReadonly(readonly);
 	setState(state);
 	setItems(items);
+	setVersion(0L);
     }
     
     public Desktop(Desktop desktop){
@@ -48,7 +51,8 @@ public class Desktop {
 		desktop.getItems()
 		       .stream()
 		       .map(DesktopItem::new)
-		       .collect(Collectors.toSet()));
+			.collect(Collectors.toSet()));
+	setVersion(desktop.getVersion());
     }
 
     /**
@@ -267,6 +271,14 @@ public class Desktop {
 	this.items.addAll(items);
     }
 
+    public Long getVersion() {
+	return version;
+    }
+
+    private void setVersion(Long version) {
+	this.version = version;
+    }
+
     @Override
     public int hashCode() {
 	final int prime = 31;
@@ -295,7 +307,8 @@ public class Desktop {
     @Override
     public String toString() {
 	return "Desktop [desktopId=" + desktopId + ", name=" + name + ", userId=" + userId + ", order=" + order + ", fixed=" + fixed
-		+ ", readonly=" + readonly + ", state=" + state + ", items=" + items + "]";
+		+ ", readonly=" + readonly + ", state=" + state + ", items=" + items + ", version=" + version + "]";
     }
+
 
 }
