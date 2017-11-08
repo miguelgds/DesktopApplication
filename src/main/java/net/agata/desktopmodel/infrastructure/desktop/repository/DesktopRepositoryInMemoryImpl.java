@@ -66,8 +66,8 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 	try {
 	    FieldUtils.writeDeclaredField(desktop, "version", desktop.getVersion() + 1L, true);
 	    datasource.put(desktop.getDesktopId(), desktop);
-	} catch (Exception e) {
-	    throw new RuntimeException(e);
+	} catch (IllegalAccessException e) {
+	    throw new RuntimeException("No se puede acceder al campo version", e);
 	}
 	
     }
