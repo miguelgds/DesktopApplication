@@ -1,5 +1,6 @@
 package net.agata.desktopmodel.domain.desktop.valueobject;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,21 +12,25 @@ import io.vavr.control.Option;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
+import net.agata.desktopmodel.domain.desktop.factory.DesktopItemFactory;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
+import net.agata.desktopmodel.domain.page.valueobject.PageID;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
-import net.agata.desktopmodel.subdomain.ui.PageID;
 import net.agata.desktopmodel.subdomain.user.UserID;
 import net.agata.desktopmodel.utils.exceptions.ExceptionUtils;
+import net.agata.desktopmodel.utils.types.StateEnum;
 
 public class UserDesktops {
     private UserID userId;
     private DesktopRepository desktopRepository;
+    private DesktopItemFactory desktopItemFactory;
 
-    public UserDesktops(UserID userId, DesktopRepository desktopRepository) {
+    public UserDesktops(UserID userId, DesktopRepository desktopRepository, DesktopItemFactory desktopItemFactory) {
 	super();
 	setUserId(userId);
 	this.desktopRepository = desktopRepository;
+	this.desktopItemFactory = desktopItemFactory;
     }
 
     /**
@@ -178,7 +183,7 @@ public class UserDesktops {
 					 this.nextDesktopOrder(), 
 					 fixed, 
 					 readonly, 
-					 DesktopSatateEnum.ACTIVE, 
+					 StateEnum.ACTIVE, 
 					 new HashSet<>());
 	desktopRepository.save(newDesktop);
 	return newDesktop;
@@ -218,6 +223,14 @@ public class UserDesktops {
 	DesktopItem newItem = desktop.addApplication(itemIcon, itemColor, itemApplicationId);
 	desktopRepository.update(desktop);
 	return newItem;
+    }
+
+    public Desktop calculateSharedPagesDesktop() {
+	
+	DesktopID sharedPagesDesktopID = new DesktopID("shared-desktop");
+	Collection<DesktopItem> sharedPages = this.desktopItemFactory.sharedDesktopItemsByUser(this.userId, sharedPagesDesktopID);
+	return new Desktop(sharedPagesDesktopID, "PÁGINAS COMPARTIDAS", this.userId, nextDesktopOrder(), true, true,
+		StateEnum.ACTIVE, new HashSet<>(sharedPages));
     }
 
     /**

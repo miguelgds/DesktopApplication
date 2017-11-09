@@ -1,31 +1,29 @@
 package net.agata.desktopmodel.infrastructure.desktop.repository;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 
+import io.vavr.Tuple2;
+import io.vavr.Tuple7;
+import io.vavr.Tuple8;
+import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
+import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
+import net.agata.desktopmodel.domain.page.valueobject.PageID;
+import net.agata.desktopmodel.infrastructure.database.InMemoryDatabase;
+import net.agata.desktopmodel.subdomain.ui.ColorID;
+import net.agata.desktopmodel.subdomain.ui.IconID;
 import net.agata.desktopmodel.subdomain.user.UserID;
+import net.agata.desktopmodel.utils.types.StateEnum;
 
 public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
-
-    private final Map<DesktopID, Desktop> datasource = new HashMap<>();
-
-    public DesktopRepositoryInMemoryImpl() {
-	super();
-    }
-
-    public DesktopRepositoryInMemoryImpl(Set<Desktop> initialDesktops) {
-	this();
-	initialDesktops.forEach(this::save);
-    }
 
     @Override
     public DesktopID nextId() {
@@ -34,10 +32,34 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 
     @Override
     public Collection<Desktop> findAll() {
-	return datasource.values()
-			 .stream()
-			 .map(Desktop::new)
-			 .collect(Collectors.toList());
+	return InMemoryDatabase.DESKTOP
+			       .values()
+			       .stream()
+			       .map(t_d -> toDesktop(t_d, InMemoryDatabase.DESKTOP_ITEM
+				       			   .values()
+				 		     	   .stream()
+				 		     	   .filter(t_di -> t_di._1.equals(t_d._1))
+			       				   .collect(Collectors.toList())))
+			       .collect(Collectors.toList());
+    }
+    
+    private static Desktop toDesktop(Tuple8<DesktopID, String, UserID, Short, Boolean, Boolean, StateEnum, Long> desktopTuple,
+	    List<Tuple7<DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short>> desktopItems){
+	Desktop desktop = new Desktop(desktopTuple._1, desktopTuple._2, desktopTuple._3, desktopTuple._4, desktopTuple._5, desktopTuple._6,
+		desktopTuple._7, desktopItems.stream()
+			    		     .map(DesktopRepositoryInMemoryImpl::toDesktopItem)
+			    		     .collect(Collectors.toSet()));
+	try {
+	    FieldUtils.writeDeclaredField(desktop, "version", desktopTuple._8, true);
+	} catch (IllegalAccessException e) {
+	    throw new RuntimeException("No se puede acceder al campo version", e);
+	}
+	return desktop;
+    }
+
+    private static DesktopItem toDesktopItem(Tuple7<DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short> desktopItem) {
+	return new DesktopItem(desktopItem._1, desktopItem._2, desktopItem._3, desktopItem._4, desktopItem._5, desktopItem._6,
+		desktopItem._7);
     }
 
     @Override
@@ -57,19 +79,51 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 
     @Override
     public Desktop save(Desktop desktop) {
-	datasource.putIfAbsent(desktop.getDesktopId(), desktop);
+	InMemoryDatabase.DESKTOP.put(desktop.getDesktopId(), toDesktopTuple(desktop));
+	List<Tuple2<DesktopID, Short>> itemsToDelete = InMemoryDatabase.DESKTOP_ITEM.entrySet()	
+	       			     .stream()
+	       			     .filter(entry -> entry.getValue()._1.equals(desktop.getDesktopId()))
+	       			     .map(Entry::getKey)
+	       			     .collect(Collectors.toList());
+	       			     
+	itemsToDelete.forEach(InMemoryDatabase.DESKTOP_ITEM::remove);
+	desktop.getItems()
+	       .stream()
+	       .forEach(desktopItem -> InMemoryDatabase.DESKTOP_ITEM.put(
+		       				new Tuple2<>(desktopItem.getDesktopId(), 
+		       				desktopItem.getOrder()), toDesktopItemTuple(desktopItem)));
 	return desktop;
+    }
+
+    private Tuple7<DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short> toDesktopItemTuple(DesktopItem desktopItem) {
+	return new Tuple7<>(desktopItem.getDesktopId(), desktopItem.getIconId(), desktopItem.getColorId(), desktopItem.getPageId(),
+		desktopItem.getApplicationId(), desktopItem.getIsFavourite(), desktopItem.getOrder());
+    }
+
+    private Tuple8<DesktopID, String, UserID, Short, Boolean, Boolean, StateEnum, Long> toDesktopTuple(Desktop desktop) {
+	return new Tuple8<>(desktop.getDesktopId(), desktop.getName(), desktop.getUserId(), desktop.getOrder(), desktop.getFixed(),
+		desktop.getReadonly(), desktop.getState(), desktop.getVersion());
     }
 
     @Override
     public void update(Desktop desktop) {
 	try {
 	    FieldUtils.writeDeclaredField(desktop, "version", desktop.getVersion() + 1L, true);
-	    datasource.put(desktop.getDesktopId(), desktop);
 	} catch (IllegalAccessException e) {
 	    throw new RuntimeException("No se puede acceder al campo version", e);
 	}
-	
+	save(desktop);
+    }
+
+    @Override
+    public DesktopItem findDesktopItemByPage(PageID pageId) {
+	return InMemoryDatabase.DESKTOP_ITEM
+			.values()
+			.stream()
+			.filter(t_di -> pageId.equals(t_di._4))
+			.findAny()
+			.map(DesktopRepositoryInMemoryImpl::toDesktopItem)
+			.orElse(null);
     }
 
 }

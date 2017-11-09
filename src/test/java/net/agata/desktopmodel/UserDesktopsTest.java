@@ -2,7 +2,6 @@ package net.agata.desktopmodel;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,85 +13,47 @@ import org.junit.Test;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
+import net.agata.desktopmodel.domain.desktop.factory.DesktopItemFactory;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
-import net.agata.desktopmodel.domain.desktop.valueobject.DesktopSatateEnum;
 import net.agata.desktopmodel.domain.desktop.valueobject.UserDesktops;
+import net.agata.desktopmodel.domain.page.repository.PageRepository;
+import net.agata.desktopmodel.domain.page.valueobject.PageID;
+import net.agata.desktopmodel.infrastructure.database.InMemoryDatabase;
 import net.agata.desktopmodel.infrastructure.desktop.repository.DesktopRepositoryInMemoryImpl;
+import net.agata.desktopmodel.infrastructure.page.repository.PageRepositoryInMemoryImpl;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
-import net.agata.desktopmodel.subdomain.ui.PageID;
 import net.agata.desktopmodel.subdomain.user.UserID;
+import net.agata.desktopmodel.utils.types.StateEnum;
 
 public class UserDesktopsTest {
 
     private UserDesktops userDesktops;
     private UserID userId;
     private DesktopRepository desktopRepository;
-    
-    private final DesktopID desktop1 = new DesktopID("1");
-    private DesktopItem desktop1_item0;
-    
-    private final DesktopID desktop2 = new DesktopID("2");
-    private DesktopItem desktop2_item0;
-    private DesktopItem desktop2_item1;
-    private DesktopItem desktop2_item2;
-    private DesktopItem desktop2_item3;
-    private DesktopItem desktop2_item4;
-    private DesktopItem desktop2_item5;
-    
-    private final DesktopID desktop3 = new DesktopID("3");
-    
-    private final DesktopID desktop4 = new DesktopID("4");
-    
-    private final DesktopID desktop5 = new DesktopID("5");
-    private DesktopItem desktop5_item0;
-    
-    private final DesktopID desktop6 = new DesktopID("6");
+    private PageRepository pageRepository;
+    private DesktopItemFactory desktopItemFactory;
 
     public UserDesktopsTest() {
 	super();
-	userId = new UserID(1);
-	
-	desktop1_item0 = new DesktopItem(desktop1, new IconID((short) 1), new ColorID((short) 1), new PageID(1), null, false, (short) 0);
-	
-	desktop2_item0 = new DesktopItem(desktop2, new IconID((short) 7), new ColorID((short) 1), new PageID(7), null, false, (short) 0);
-	desktop2_item1 = new DesktopItem(desktop2, new IconID((short) 6), new ColorID((short) 2), new PageID(4), null, false, (short) 1);
-	desktop2_item2 = new DesktopItem(desktop2, new IconID((short) 1), new ColorID((short) 5), new PageID(3), null, false, (short) 2);
-	desktop2_item3 = new DesktopItem(desktop2, new IconID((short) 5), new ColorID((short) 6), new PageID(6), null, false, (short) 3);
-	desktop2_item4 = new DesktopItem(desktop2, new IconID((short) 8), new ColorID((short) 2), new PageID(8), null, false, (short) 4);
-	desktop2_item5 = new DesktopItem(desktop2, new IconID((short) 3), new ColorID((short) 3), new PageID(2), null, true, (short) 5);
-	
-	desktop5_item0 = new DesktopItem(desktop5, new IconID((short) 2), new ColorID((short) 2), null, new ApplicationID("ID"), false, (short) 0);
-	
-	desktopRepository = new DesktopRepositoryInMemoryImpl(new HashSet<>(Arrays.asList(
-		new Desktop(desktop1, "PANEL DE USUARIO       ", userId, (short) 0, true, true, DesktopSatateEnum.ACTIVE, 
-			new HashSet<>(Arrays.asList(
-				desktop1_item0
-			))),
-		new Desktop(desktop2, "FUNCIONALIDADES COMUNES", userId, (short) 1, true, false, DesktopSatateEnum.ACTIVE,
-			new HashSet<>(Arrays.asList(
-				desktop2_item0, desktop2_item1, desktop2_item2, desktop2_item3, desktop2_item4, desktop2_item5
-			))),
-		new Desktop(desktop3, "PANEL DE CONFIGURACION ", userId, (short) 2, true, true, DesktopSatateEnum.DELETED, new HashSet<>()),
-		new Desktop(desktop4, "PANEL CUSTOMIZADO1     ", userId, (short) 3, false, true, DesktopSatateEnum.ACTIVE, new HashSet<>()),
-		new Desktop(desktop5, "PANEL CUSTOMIZADO2     ", userId, (short) 4, false, false, DesktopSatateEnum.ACTIVE, 
-			new HashSet<>(Arrays.asList(
-				desktop5_item0
-			))),
-		new Desktop(desktop6, "FUNCIONALIDADES COMUNES", new UserID(2), (short) 1, false, true, DesktopSatateEnum.ACTIVE, new HashSet<>())
-	)));
-	this.userDesktops = new UserDesktops(userId, desktopRepository);
+	InMemoryDatabase.initData();
+	userId = new UserID(4);
+	this.pageRepository = new PageRepositoryInMemoryImpl();
+	this.desktopRepository = new DesktopRepositoryInMemoryImpl();
+
+	this.desktopItemFactory = new DesktopItemFactory(this.pageRepository, desktopRepository);
+	this.userDesktops = new UserDesktops(this.userId, this.desktopRepository, this.desktopItemFactory);
     }
 
     @Test
     public void relocateDesktop() {
-	List<DesktopID> expectedOrder = Arrays.asList(desktop2, 
-						      desktop4,
-						      desktop5,
-						      desktop1);
+	List<DesktopID> expectedOrder = Arrays.asList(InMemoryDatabase.DESKTOP_ID_2, 
+						      InMemoryDatabase.DESKTOP_ID_4,
+						      InMemoryDatabase.DESKTOP_ID_5,
+						      InMemoryDatabase.DESKTOP_ID_1);
 	
-	userDesktops.changeDesktopOrder(desktop1, (short) 4);
+	userDesktops.changeDesktopOrder(InMemoryDatabase.DESKTOP_ID_1, (short) 4);
 	List<DesktopID> desktopsOrdered = desktopRepository.findByUser(this.userId)
 			 				   .stream()
 			 				   .filter(Desktop::isActive)
@@ -107,20 +68,20 @@ public class UserDesktopsTest {
 
     @Test
     public void removeDesktop() {
-	DesktopID desktopId = desktop5;
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_5;
 	userDesktops.removeDesktop(desktopId);
 	Assert.assertTrue(desktopRepository.findByUser(this.userId)
 					   .stream()
 					   .filter(d -> d.getDesktopId().equals(desktopId))
 					   .findAny()
-					   .map(d -> d.getState().equals(DesktopSatateEnum.DELETED))
+					   .map(d -> d.getState().equals(StateEnum.DELETED))
 					   .orElse(Boolean.FALSE));
     }
 
     @Test
     public void moveDesktopItem() {	
-	DesktopID desktopFrom = desktop1;
-	DesktopID desktopTo = desktop5;
+	DesktopID desktopFrom = InMemoryDatabase.DESKTOP_ID_1;
+	DesktopID desktopTo = InMemoryDatabase.DESKTOP_ID_5;
 	
 	userDesktops.moveItem(desktopFrom, (short) 0, desktopTo);
 
@@ -140,7 +101,7 @@ public class UserDesktopsTest {
 
     @Test
     public void changeItemFavourite() {
-	DesktopID desktopId = desktop1;
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_1;
 	Short order = (short) 0;
 	userDesktops.setItemAsFavourite(desktopId, order);
 
@@ -155,33 +116,33 @@ public class UserDesktopsTest {
 
     @Test
     public void relocateDesktopItem() {
-	DesktopID desktopId = desktop2;
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_2;
 	Short itemOrderFrom = (short) 4;
 	Short itemOrderTo = (short) 1;
 	
-	List<DesktopItem> itemsOrderExpected = Arrays.asList(desktop2_item0,							     
-							     desktop2_item4,					     
-							     desktop2_item1,
-							     desktop2_item2,
-							     desktop2_item3,							     							     
-							     desktop2_item5);
+	Optional<DesktopItem> desktopItemBefore = desktopRepository.findById(desktopId)
+			 					 .getItems()
+			 					 .stream()
+			 					 .sorted(Comparator.comparing(DesktopItem::getOrder))
+			 					 .skip(itemOrderFrom)
+			 					 .findFirst();
 	
 	userDesktops.changeDesktopItemOrder(desktopId, itemOrderFrom, itemOrderTo);
 	
-	List<DesktopItem> desktopItemsOrdered = desktopRepository.findById(desktopId)
+	Optional<DesktopItem> desktopItemAfter = desktopRepository.findById(desktopId)
         		       					 .getItems()
         		       					 .stream()
         		       					 .sorted(Comparator.comparing(DesktopItem::getOrder))
-        		       					 .collect(Collectors.toList());
+        		       					 .skip(itemOrderTo)
+			 					 .findFirst();
 	
-	int index = 0;
-	for (DesktopItem desktopItem : itemsOrderExpected) {
-	    Assert.assertTrue(desktopItemsEqualsExceptOrder(desktopItem, desktopItemsOrdered.get(index++)));
-	}
+	Assert.assertTrue(desktopItemBefore.isPresent());
+	Assert.assertTrue(desktopItemAfter.isPresent());
+	Assert.assertTrue(desktopItemsEqualsExceptOrder(desktopItemBefore.get(), desktopItemAfter.get()));
 
     }
-    
-    private static boolean desktopItemsEqualsExceptOrder(DesktopItem item1, DesktopItem item2){
+
+    private boolean desktopItemsEqualsExceptOrder(DesktopItem item1, DesktopItem item2){
 	return Objects.equals(item1.getDesktopId(), item2.getDesktopId())
 		&& Objects.equals(item1.getIconId(), item2.getIconId())
 		&& Objects.equals(item1.getColorId(), item2.getColorId())
@@ -192,7 +153,7 @@ public class UserDesktopsTest {
 
     @Test
     public void removeDesktopItem() {
-	DesktopID desktopId = desktop2;
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_2;
 	Short itemOrder = (short) 5;
 
 	Optional<DesktopItem> desktopToRemove = desktopRepository.findById(desktopId)
@@ -239,13 +200,13 @@ public class UserDesktopsTest {
 	Assert.assertNotNull(desktopCreated.get().getOrder());
 	Assert.assertEquals(desktopCreated.get().getFixed(), desktopFixed);
 	Assert.assertEquals(desktopCreated.get().getReadonly(), desktopReadonly);
-	Assert.assertEquals(desktopCreated.get().getState(), DesktopSatateEnum.ACTIVE);
+	Assert.assertEquals(desktopCreated.get().getState(), StateEnum.ACTIVE);
     }
 
     @Test
     public void addPageToDesktop() {
 
-	DesktopID desktopId = desktop5;
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_5;
 	IconID itemIcon = new IconID((short) 17);
 	ColorID itemColor = new ColorID((short) 7);
 	PageID itemPageId = new PageID(77);
@@ -271,7 +232,7 @@ public class UserDesktopsTest {
     @Test
     public void addApplicationToDesktop() {
 
-	DesktopID desktopId = desktop5;
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_5;
 	IconID itemIcon = new IconID((short) 17);
 	ColorID itemColor = new ColorID((short) 7);
 	ApplicationID itemApplicationId = new ApplicationID("898");
@@ -294,5 +255,13 @@ public class UserDesktopsTest {
 	Assert.assertEquals(desktopItemCreated.get().getIsFavourite(), false);
     }
 
+    @Test
+    public void calculateSharedItemsDesktop() {
+
+	Desktop sharedDesktop = userDesktops.calculateSharedPagesDesktop();
+
+	Assert.assertNotNull(sharedDesktop);
+	Assert.assertTrue(sharedDesktop.getItems().size() == 2);
+    }
 
 }

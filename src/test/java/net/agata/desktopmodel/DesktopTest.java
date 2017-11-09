@@ -17,11 +17,11 @@ import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
-import net.agata.desktopmodel.domain.desktop.valueobject.DesktopSatateEnum;
+import net.agata.desktopmodel.domain.page.valueobject.PageID;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
-import net.agata.desktopmodel.subdomain.ui.PageID;
 import net.agata.desktopmodel.subdomain.user.UserID;
+import net.agata.desktopmodel.utils.types.StateEnum;
 
 @RunWith(Parameterized.class)
 public class DesktopTest {
@@ -39,7 +39,7 @@ public class DesktopTest {
     @Parameter(5)
     public Boolean readonly;
     @Parameter(6)
-    public DesktopSatateEnum state;
+    public StateEnum state;
     @Parameter(7)
     public Set<DesktopItem> items;
 
@@ -47,7 +47,7 @@ public class DesktopTest {
     public static Collection<Object[]> data() {
 	return Arrays.asList(new Object[][] {
 		{ new DesktopID(UUID.randomUUID().toString()), "Panel de usuario", new UserID(1), Short.valueOf("0"), Boolean.TRUE,
-			Boolean.FALSE, DesktopSatateEnum.ACTIVE, new HashSet<>() }
+			Boolean.FALSE, StateEnum.ACTIVE, new HashSet<>() }
 	});
     }
 

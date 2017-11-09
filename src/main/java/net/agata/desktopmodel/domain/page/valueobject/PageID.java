@@ -1,4 +1,4 @@
-package net.agata.desktopmodel.subdomain.ui;
+package net.agata.desktopmodel.domain.page.valueobject;
 
 import org.apache.commons.lang3.Validate;
 

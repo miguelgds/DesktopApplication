@@ -4,9 +4,9 @@ import org.apache.commons.lang3.Validate;
 
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
+import net.agata.desktopmodel.domain.page.valueobject.PageID;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
-import net.agata.desktopmodel.subdomain.ui.PageID;
 
 public class DesktopItem {
 

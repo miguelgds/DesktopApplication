@@ -12,13 +12,13 @@ import org.apache.commons.lang3.Validate;
 import io.vavr.control.Option;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
-import net.agata.desktopmodel.domain.desktop.valueobject.DesktopSatateEnum;
 import net.agata.desktopmodel.domain.desktop.valueobject.DisplacementMode;
+import net.agata.desktopmodel.domain.page.valueobject.PageID;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
-import net.agata.desktopmodel.subdomain.ui.PageID;
 import net.agata.desktopmodel.subdomain.user.UserID;
 import net.agata.desktopmodel.utils.exceptions.ExceptionUtils;
+import net.agata.desktopmodel.utils.types.StateEnum;
 
 public class Desktop {
 
@@ -28,11 +28,11 @@ public class Desktop {
     private Short order;
     private Boolean fixed;
     private Boolean readonly;
-    private DesktopSatateEnum state;
+    private StateEnum state;
     private Set<DesktopItem> items = new HashSet<>();
     private Long version;
 
-    public Desktop(DesktopID desktopId, String name, UserID userId, Short order, Boolean fixed, Boolean readonly, DesktopSatateEnum state,
+    public Desktop(DesktopID desktopId, String name, UserID userId, Short order, Boolean fixed, Boolean readonly, StateEnum state,
 	    Set<DesktopItem> items) {
 	super();
 	setDesktopId(desktopId);
@@ -44,15 +44,6 @@ public class Desktop {
 	setState(state);
 	setItems(items);
 	setVersion(0L);
-    }
-    
-    public Desktop(Desktop desktop){
-	this(desktop.getDesktopId(), desktop.getName(), desktop.getUserId(), desktop.getOrder(), desktop.getFixed(), desktop.getReadonly(), desktop.getState(), 
-		desktop.getItems()
-		       .stream()
-		       .map(DesktopItem::new)
-			.collect(Collectors.toSet()));
-	setVersion(desktop.getVersion());
     }
 
     /**
@@ -85,14 +76,14 @@ public class Desktop {
     }
 
     public boolean isActive() {
-	return DesktopSatateEnum.ACTIVE.equals(this.state);
+	return StateEnum.ACTIVE.equals(this.state);
     }
 
     public void remove() {
 	Validate.isTrue(isActive() && !this.fixed && !this.readonly,
 		"Sólo se pueden eliminar escritorios activos y que no sean fijos ni de solo lectura");
 
-	setState(DesktopSatateEnum.DELETED);
+	setState(StateEnum.DELETED);
     }
 
     public void reorder(Short order) {
@@ -253,11 +244,11 @@ public class Desktop {
 	this.readonly = readonly;
     }
 
-    public DesktopSatateEnum getState() {
+    public StateEnum getState() {
 	return state;
     }
 
-    private void setState(DesktopSatateEnum state) {
+    private void setState(StateEnum state) {
 	Validate.notNull(state);
 	this.state = state;
     }
