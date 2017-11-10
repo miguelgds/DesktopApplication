@@ -260,10 +260,20 @@ public class UserDesktopsTest {
     @Test
     public void calculateSharedItemsDesktop() {
 
+	// TODO DEVOLVER UN OBJETO CUSTOM EN LUGAR DE UN DESKTOP
 	Desktop sharedItemsDesktop = userDesktops.calculateSharedPagesDesktop();
 
 	Assert.assertNotNull(sharedItemsDesktop);
 	Assert.assertTrue(sharedItemsDesktop.getItems().size() == 2);
+    }
+
+    @Test
+    public void calculateSharedDesktops() {
+	// TODO DEVOLVER OBJETOS CUSTOM EN LUGAR DE UN DESKTOPS
+	List<Desktop> sharedDesktops = userDesktops.calculateSharedDesktops();
+
+	Assert.assertNotNull(sharedDesktops);
+	Assert.assertTrue(sharedDesktops.size() == 1);
     }
 
     @Test
@@ -273,19 +283,12 @@ public class UserDesktopsTest {
 	PermissionEnum permission = PermissionEnum.READ_WRITE;
 	userDesktops.shareDesktop(desktopId, userGroupId, permission);
 
+	// TODO: METER EL DESKTOP_USER_GROUP COMO OBJETO DEPENDIENTE DE DESKTOP
 	// TODO: VALIDAR QUE SE HA COMPARTIDO
 	InMemoryDatabase.DESKTOP_USER_GROUP
 			.values()
 			.stream()
 			.forEach(System.out::println);
-    }
-
-    @Test
-    public void calculateSharedDesktops() {
-	List<Desktop> sharedDesktops = userDesktops.calculateSharedDesktops();
-
-	Assert.assertNotNull(sharedDesktops);
-	Assert.assertTrue(sharedDesktops.size() == 1);
     }
 
 }
