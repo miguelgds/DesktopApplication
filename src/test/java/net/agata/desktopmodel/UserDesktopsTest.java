@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.vavr.Tuple2;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
@@ -259,7 +260,6 @@ public class UserDesktopsTest {
 
     @Test
     public void calculateSharedItemsDesktop() {
-
 	// TODO DEVOLVER UN OBJETO CUSTOM EN LUGAR DE UN DESKTOP
 	Desktop sharedItemsDesktop = userDesktops.calculateSharedPagesDesktop();
 
@@ -279,16 +279,12 @@ public class UserDesktopsTest {
     @Test
     public void shareDesktop() {
 	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_2;
-	UserGroupID userGroupId = new UserGroupID(9);
+	UserGroupID userGroupId = new UserGroupID(8);
 	PermissionEnum permission = PermissionEnum.READ_WRITE;
 	userDesktops.shareDesktop(desktopId, userGroupId, permission);
 
-	// TODO: METER EL DESKTOP_USER_GROUP COMO OBJETO DEPENDIENTE DE DESKTOP
-	// TODO: VALIDAR QUE SE HA COMPARTIDO
-	InMemoryDatabase.DESKTOP_USER_GROUP
-			.values()
-			.stream()
-			.forEach(System.out::println);
+	Assert.assertTrue(InMemoryDatabase.DESKTOP_USER_GROUP
+					  .containsKey(new Tuple2<>(desktopId, userGroupId)));
     }
 
 }
