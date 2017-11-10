@@ -24,7 +24,9 @@ import net.agata.desktopmodel.infrastructure.desktop.repository.DesktopRepositor
 import net.agata.desktopmodel.infrastructure.page.repository.PageRepositoryInMemoryImpl;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
+import net.agata.desktopmodel.subdomain.user.UserGroupID;
 import net.agata.desktopmodel.subdomain.user.UserID;
+import net.agata.desktopmodel.utils.types.PermissionEnum;
 import net.agata.desktopmodel.utils.types.StateEnum;
 
 public class UserDesktopsTest {
@@ -262,6 +264,20 @@ public class UserDesktopsTest {
 
 	Assert.assertNotNull(sharedItemsDesktop);
 	Assert.assertTrue(sharedItemsDesktop.getItems().size() == 2);
+    }
+
+    @Test
+    public void shareDesktop() {
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_2;
+	UserGroupID userGroupId = new UserGroupID(9);
+	PermissionEnum permission = PermissionEnum.READ_WRITE;
+	userDesktops.shareDesktop(desktopId, userGroupId, permission);
+
+	// TODO: VALIDAR QUE SE HA COMPARTIDO
+	InMemoryDatabase.DESKTOP_USER_GROUP
+			.values()
+			.stream()
+			.forEach(System.out::println);
     }
 
     @Test

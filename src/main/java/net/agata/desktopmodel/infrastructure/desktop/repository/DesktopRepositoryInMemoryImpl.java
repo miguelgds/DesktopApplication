@@ -9,8 +9,10 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import io.vavr.Tuple7;
 import io.vavr.Tuple8;
+import io.vavr.control.Option;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
@@ -20,7 +22,10 @@ import net.agata.desktopmodel.domain.page.valueobject.PageID;
 import net.agata.desktopmodel.infrastructure.database.InMemoryDatabase;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
+import net.agata.desktopmodel.subdomain.user.UserGroupID;
 import net.agata.desktopmodel.subdomain.user.UserID;
+import net.agata.desktopmodel.utils.exceptions.ExceptionUtils;
+import net.agata.desktopmodel.utils.types.PermissionEnum;
 import net.agata.desktopmodel.utils.types.StateEnum;
 
 public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
@@ -146,6 +151,17 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 				       			       						    .filter(t_di -> t_di._1.equals(t_d._1))
 				       			       						    .collect(Collectors.toList())))	
 			       .collect(Collectors.toList());
+    }
+
+    @Override
+    public void shareDesktop(UserID userId, DesktopID desktopId, UserGroupID userGroupId, PermissionEnum permission) {
+	Option.ofOptional(InMemoryDatabase.USER_GROUP_USER
+			.stream()
+			.filter(t_ugu -> t_ugu._2.equals(userId) && t_ugu._1.equals(userGroupId))
+			.findAny())
+	      .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("El USER_GROUP %s no pertenece al USUARIO %s", userGroupId, userId));
+	
+	InMemoryDatabase.DESKTOP_USER_GROUP.put(new Tuple2<>(desktopId, userGroupId), new Tuple3<>(desktopId, userGroupId, permission));
     }
 
 }

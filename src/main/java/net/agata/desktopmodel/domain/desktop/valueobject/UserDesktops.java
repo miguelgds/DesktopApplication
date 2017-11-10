@@ -16,8 +16,10 @@ import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
 import net.agata.desktopmodel.domain.page.valueobject.PageID;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
+import net.agata.desktopmodel.subdomain.user.UserGroupID;
 import net.agata.desktopmodel.subdomain.user.UserID;
 import net.agata.desktopmodel.utils.exceptions.ExceptionUtils;
+import net.agata.desktopmodel.utils.types.PermissionEnum;
 import net.agata.desktopmodel.utils.types.StateEnum;
 
 public class UserDesktops {
@@ -230,6 +232,15 @@ public class UserDesktops {
 
     public List<Desktop> calculateSharedDesktops() {
 	return this.desktopFactory.desktopsShared(this.userId);
+    }
+
+    public void shareDesktop(DesktopID desktopId, UserGroupID userGroupId, PermissionEnum permission) {
+	Validate.notNull(desktopId);
+	Validate.notNull(userGroupId);
+	
+	this.findUserDesktopActive(desktopId)
+	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
+	    .peek(d -> desktopRepository.shareDesktop(this.userId, d.getDesktopId(), userGroupId, permission));
     }
 
     /**

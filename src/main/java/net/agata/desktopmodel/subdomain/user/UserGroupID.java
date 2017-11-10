@@ -44,4 +44,9 @@ public class UserGroupID {
 	return true;
     }
 
+    @Override
+    public String toString() {
+	return "UserGroupID [userGroupId=" + userGroupId + "]";
+    }
+
 }
