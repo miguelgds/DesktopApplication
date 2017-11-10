@@ -1,6 +1,7 @@
 package net.agata.desktopmodel.domain.desktop.repository;
 
 import java.util.Collection;
+import java.util.List;
 
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
@@ -23,5 +24,7 @@ public interface DesktopRepository {
     void update(Desktop desktop);
 
     DesktopItem findDesktopItemByPage(PageID pageId);
+
+    List<Desktop> sharedDesktopsByUser(UserID userId);
 
 }

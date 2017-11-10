@@ -126,4 +126,26 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 			.orElse(null);
     }
 
+    @Override
+    public List<Desktop> sharedDesktopsByUser(UserID userId) {
+	return InMemoryDatabase.USER_GROUP_USER
+			       .stream()			       
+			       .filter(t_ug -> t_ug._2.equals(userId))
+			       .map(Tuple2::_1)
+			       .flatMap(ug -> InMemoryDatabase.DESKTOP_USER_GROUP
+				       			      .values()
+				       			      .stream()
+				       			      .filter(t_dug -> t_dug._2.equals(ug)))
+			       .flatMap(t_dug -> InMemoryDatabase.DESKTOP
+				       			     .values()
+				       			     .stream()
+				       			     .filter(t_d -> t_d._1.equals(t_dug._1)))
+			       .map(t_d -> DesktopRepositoryInMemoryImpl.toDesktop(t_d, InMemoryDatabase.DESKTOP_ITEM
+				       			       						    .values()
+				       			       						    .stream()
+				       			       						    .filter(t_di -> t_di._1.equals(t_d._1))
+				       			       						    .collect(Collectors.toList())))	
+			       .collect(Collectors.toList());
+    }
+
 }

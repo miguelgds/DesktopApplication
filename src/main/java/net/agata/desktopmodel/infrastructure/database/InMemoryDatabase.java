@@ -29,6 +29,9 @@ public class InMemoryDatabase {
 	DESKTOP.clear();
 	DESKTOP.putAll(DESKTOP_INITIAL_DATA);
 
+	DESKTOP_USER_GROUP.clear();
+	DESKTOP_USER_GROUP.putAll(DESKTOP_USER_GROUP_INITIAL_DATA);
+
 	DESKTOP_ITEM.clear();
 	DESKTOP_ITEM.putAll(DESKTOP_ITEM_INITIAL_DATA);
     }
@@ -53,6 +56,15 @@ public class InMemoryDatabase {
 	DESKTOP_INITIAL_DATA.put(DESKTOP_ID_6, new Tuple8<>(DESKTOP_ID_6, "FUNCIONALIDADES COMUNES", new UserID(3), (short) 0, false, true, StateEnum.ACTIVE, 0L));
     }
     
+    /**
+     * ID_DESKTOP, ID_USER_GROUP, PERMISSIONS
+     */
+    private static final Map<Tuple2<DesktopID, UserGroupID>, Tuple3<DesktopID, UserGroupID, PermissionEnum>> DESKTOP_USER_GROUP_INITIAL_DATA = new HashMap<>();
+    public static final Map<Tuple2<DesktopID, UserGroupID>, Tuple3<DesktopID, UserGroupID, PermissionEnum>> DESKTOP_USER_GROUP = new HashMap<>();
+    static {
+	DESKTOP_USER_GROUP_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_6, new UserGroupID(8)), new Tuple3<>(DESKTOP_ID_6, new UserGroupID(8), PermissionEnum.READ));
+    }
+
     /**
      * ID_DESKTOP, ID_ICON, ID_COLOR, ID_PAGE, ID_APPLICATION, IS_FAVOURITE, ORDER
      */
