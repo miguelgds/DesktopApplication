@@ -226,8 +226,8 @@ public class UserDesktops {
 	return newItem;
     }
 
-    public Desktop calculateSharedPagesDesktop() {
-	return this.desktopFactory.desktopSharedPages(this.userId, nextDesktopOrder());
+    public List<SharedDesktopItem> calculateSharedPages() {
+	return this.desktopFactory.sharedPagesToUser(this.userId);
     }
 
     public List<Desktop> calculateSharedDesktops() {

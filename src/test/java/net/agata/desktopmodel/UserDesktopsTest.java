@@ -17,6 +17,7 @@ import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.factory.DesktopFactory;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
+import net.agata.desktopmodel.domain.desktop.valueobject.SharedDesktopItem;
 import net.agata.desktopmodel.domain.desktop.valueobject.UserDesktops;
 import net.agata.desktopmodel.domain.page.repository.PageRepository;
 import net.agata.desktopmodel.domain.page.valueobject.PageID;
@@ -260,11 +261,10 @@ public class UserDesktopsTest {
 
     @Test
     public void calculateSharedItemsDesktop() {
-	// TODO DEVOLVER UN OBJETO CUSTOM EN LUGAR DE UN DESKTOP
-	Desktop sharedItemsDesktop = userDesktops.calculateSharedPagesDesktop();
+	List<SharedDesktopItem> sharedItems = userDesktops.calculateSharedPages();
 
-	Assert.assertNotNull(sharedItemsDesktop);
-	Assert.assertTrue(sharedItemsDesktop.getItems().size() == 2);
+	Assert.assertNotNull(sharedItems);
+	Assert.assertTrue(sharedItems.size() == 2);
     }
 
     @Test
