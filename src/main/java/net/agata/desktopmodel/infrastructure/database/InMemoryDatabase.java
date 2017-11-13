@@ -53,7 +53,7 @@ public class InMemoryDatabase {
 	DESKTOP_INITIAL_DATA.put(DESKTOP_ID_3, new Tuple8<>(DESKTOP_ID_3, "PANEL DE CONFIGURACION", new UserID(4), (short) 2, true, true, StateEnum.DELETED, 1L));
 	DESKTOP_INITIAL_DATA.put(DESKTOP_ID_4, new Tuple8<>(DESKTOP_ID_4, "PANEL CUSTOMIZADO1", new UserID(4), (short) 3, false, true, StateEnum.ACTIVE, 0L));
 	DESKTOP_INITIAL_DATA.put(DESKTOP_ID_5, new Tuple8<>(DESKTOP_ID_5, "PANEL CUSTOMIZADO2", new UserID(4), (short) 4, false, false, StateEnum.ACTIVE, 0L));
-	DESKTOP_INITIAL_DATA.put(DESKTOP_ID_6, new Tuple8<>(DESKTOP_ID_6, "FUNCIONALIDADES COMUNES", new UserID(3), (short) 0, false, true, StateEnum.ACTIVE, 0L));
+	DESKTOP_INITIAL_DATA.put(DESKTOP_ID_6, new Tuple8<>(DESKTOP_ID_6, "FUNCIONALIDADES COMUNES", new UserID(3), (short) 0, false, false, StateEnum.ACTIVE, 0L));
     }
     
     /**
@@ -62,7 +62,7 @@ public class InMemoryDatabase {
     private static final Map<Tuple2<DesktopID, UserGroupID>, Tuple3<DesktopID, UserGroupID, PermissionEnum>> DESKTOP_USER_GROUP_INITIAL_DATA = new HashMap<>();
     public static final Map<Tuple2<DesktopID, UserGroupID>, Tuple3<DesktopID, UserGroupID, PermissionEnum>> DESKTOP_USER_GROUP = new HashMap<>();
     static {
-	DESKTOP_USER_GROUP_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_6, new UserGroupID(8)), new Tuple3<>(DESKTOP_ID_6, new UserGroupID(8), PermissionEnum.READ));
+	DESKTOP_USER_GROUP_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_6, new UserGroupID(8)), new Tuple3<>(DESKTOP_ID_6, new UserGroupID(8), PermissionEnum.READ_WRITE));
     }
 
     /**

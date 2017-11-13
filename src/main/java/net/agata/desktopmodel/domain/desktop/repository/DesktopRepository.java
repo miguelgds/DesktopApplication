@@ -2,6 +2,7 @@ package net.agata.desktopmodel.domain.desktop.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
@@ -31,5 +32,7 @@ public interface DesktopRepository {
     List<SharedDesktop> sharedDesktopsByUser(UserID userId);
 
     void shareDesktop(UserID userId, DesktopID desktopId, UserGroupID userGroupId, PermissionEnum permission);
+
+    Map<PermissionEnum, List<Desktop>> findSharedsByUser(UserID userId);
 
 }

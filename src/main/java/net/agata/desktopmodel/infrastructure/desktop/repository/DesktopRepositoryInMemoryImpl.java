@@ -2,6 +2,7 @@ package net.agata.desktopmodel.infrastructure.desktop.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -177,5 +178,31 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 	
 	InMemoryDatabase.DESKTOP_USER_GROUP.put(new Tuple2<>(desktopId, userGroupId), new Tuple3<>(desktopId, userGroupId, permission));
     }
+
+    @Override
+    public Map<PermissionEnum, List<Desktop>> findSharedsByUser(UserID userId) {
+	return InMemoryDatabase.USER_GROUP_USER
+		       .stream()			       
+		       .filter(t_ug -> t_ug._2.equals(userId))
+		       .map(Tuple2::_1)
+		       .flatMap(ug -> InMemoryDatabase.DESKTOP_USER_GROUP
+			       			      .values()
+			       			      .stream()
+			       			      .filter(t_dug -> t_dug._2.equals(ug)))
+		       .flatMap(t_dug -> InMemoryDatabase.DESKTOP
+			       			     .values()
+			       			     .stream()
+			       			     .filter(t_d -> t_d._1.equals(t_dug._1))
+			       			     .map(t_d -> DesktopRepositoryInMemoryImpl.toDesktop(t_d, InMemoryDatabase.DESKTOP_ITEM
+		       						    			      		.values()
+		       						    			      		.stream()
+		       						    			      		.filter(t_di -> t_di._1.equals(t_d._1))
+		       						    			      		.collect(Collectors.toList())))
+			       			     .map(d -> new Tuple2<Desktop, PermissionEnum>(d, t_dug._3)))		       
+		       .collect(Collectors.groupingBy(Tuple2<Desktop, PermissionEnum>::_2, 
+			       			      Collectors.mapping(Tuple2<Desktop, PermissionEnum>::_1, Collectors.toList())));
+    }
+    
+    
 
 }

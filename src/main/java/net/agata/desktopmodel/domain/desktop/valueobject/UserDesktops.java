@@ -1,5 +1,6 @@
 package net.agata.desktopmodel.domain.desktop.valueobject;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -65,6 +66,7 @@ public class UserDesktops {
 	Validate.notNull(desktopId);
 
 	this.findUserDesktopActive(desktopId)
+	    .orElse(() -> this.findReadWriteSharedDesktop(desktopId))
 	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
 	    .peek(this::removeDesktop);	
     }
@@ -166,8 +168,24 @@ public class UserDesktops {
 	Validate.notNull(itemOrder);
 
 	this.findUserDesktopActive(desktopId)
+	    .orElse(() -> this.findReadWriteSharedDesktop(desktopId))
 	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
 	    .peek(d -> removeDesktopItem(d, itemOrder));
+    }
+
+    private Option<Desktop> findReadWriteSharedDesktop(DesktopID desktopId) {
+	return Option.ofOptional(this.userSharedDesktops(PermissionEnum.READ_WRITE)
+				     .stream()
+				     .filter(d -> d.getDesktopId().equals(desktopId))
+				     .findAny());
+    }
+
+    private Set<Desktop> userSharedDesktops(PermissionEnum permission) {
+	return this.desktopRepository.findSharedsByUser(this.userId)
+				     .getOrDefault(permission, Collections.emptyList())
+				     .stream()
+				     .filter(Desktop::isActive)
+				     .collect(Collectors.toSet());
     }
 
     private void removeDesktopItem(Desktop desktop, Short itemOrder) {

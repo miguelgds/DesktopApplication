@@ -287,4 +287,31 @@ public class UserDesktopsTest {
 					  .containsKey(new Tuple2<>(desktopId, userGroupId)));
     }
 
+    @Test
+    public void removeSharedDesktopItem() {
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_6;
+	Short itemOrder = (short) 0;
+
+	Optional<DesktopItem> desktopToRemove = desktopRepository.findById(desktopId)
+			 					 .getItems()
+			 					 .stream()
+			 					 .filter(item -> item.getOrder().equals(itemOrder))
+			 					 .findAny();
+	Assert.assertTrue(desktopToRemove.isPresent());
+	
+	userDesktops.removeDesktopItem(desktopId, itemOrder);
+	
+	Assert.assertTrue(desktopRepository.findById(desktopId)
+					   .getItems()
+	 		 		   .stream()
+	 		 		   .noneMatch(item -> this.desktopItemsEquals(item, desktopToRemove.get())));
+    }
+    
+    @Test
+    public void removeSharedDesktop() {
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_6;
+	userDesktops.removeDesktop(desktopId);
+	Assert.assertTrue(desktopRepository.findById(desktopId).getState().equals(StateEnum.DELETED));
+    }
+
 }
