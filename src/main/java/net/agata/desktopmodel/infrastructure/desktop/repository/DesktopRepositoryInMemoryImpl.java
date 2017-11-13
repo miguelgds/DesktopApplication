@@ -18,6 +18,8 @@ import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
+import net.agata.desktopmodel.domain.desktop.valueobject.SharedDesktop;
+import net.agata.desktopmodel.domain.desktop.valueobject.SharedDesktopDesktopItem;
 import net.agata.desktopmodel.domain.page.valueobject.PageID;
 import net.agata.desktopmodel.infrastructure.database.InMemoryDatabase;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
@@ -132,7 +134,7 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
     }
 
     @Override
-    public List<Desktop> sharedDesktopsByUser(UserID userId) {
+    public List<SharedDesktop> sharedDesktopsByUser(UserID userId) {
 	return InMemoryDatabase.USER_GROUP_USER
 			       .stream()			       
 			       .filter(t_ug -> t_ug._2.equals(userId))
@@ -144,13 +146,25 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 			       .flatMap(t_dug -> InMemoryDatabase.DESKTOP
 				       			     .values()
 				       			     .stream()
-				       			     .filter(t_d -> t_d._1.equals(t_dug._1)))
-			       .map(t_d -> DesktopRepositoryInMemoryImpl.toDesktop(t_d, InMemoryDatabase.DESKTOP_ITEM
-				       			       						    .values()
-				       			       						    .stream()
-				       			       						    .filter(t_di -> t_di._1.equals(t_d._1))
-				       			       						    .collect(Collectors.toList())))	
+				       			     .filter(t_d -> t_d._1.equals(t_dug._1))
+				       			     .map(t_d -> DesktopRepositoryInMemoryImpl.toSharedDesktop(t_d, t_dug._3, InMemoryDatabase.DESKTOP_ITEM
+			       						    			      		.values()
+			       						    			      		.stream()
+			       						    			      		.filter(t_di -> t_di._1.equals(t_d._1))
+			       						    			      		.collect(Collectors.toList()))))			       	
 			       .collect(Collectors.toList());
+    }
+
+    private static SharedDesktop toSharedDesktop(Tuple8<DesktopID, String, UserID, Short, Boolean, Boolean, StateEnum, Long> desktopTuple, PermissionEnum permission,
+	    List<Tuple7<DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short>> desktopItemTuples) {
+	return new SharedDesktop(desktopTuple._1, desktopTuple._2, desktopTuple._5, desktopTuple._6, permission,
+		desktopItemTuples.stream()
+				 .map(DesktopRepositoryInMemoryImpl::toSharedDesktopDesktopItem)
+				 .collect(Collectors.toList()));
+    }
+    
+    private static SharedDesktopDesktopItem toSharedDesktopDesktopItem(Tuple7<DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short> desktopItemTuple){
+	return new SharedDesktopDesktopItem(desktopItemTuple._2, desktopItemTuple._3, desktopItemTuple._4, desktopItemTuple._5, desktopItemTuple._7);
     }
 
     @Override

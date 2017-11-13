@@ -11,8 +11,8 @@ import io.vavr.control.Option;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
-import net.agata.desktopmodel.domain.desktop.factory.DesktopFactory;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
+import net.agata.desktopmodel.domain.desktop.service.SharedDesktopsAndItemsService;
 import net.agata.desktopmodel.domain.page.valueobject.PageID;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
@@ -25,13 +25,13 @@ import net.agata.desktopmodel.utils.types.StateEnum;
 public class UserDesktops {
     private UserID userId;
     private DesktopRepository desktopRepository;
-    private DesktopFactory desktopFactory;
+    private SharedDesktopsAndItemsService sharedDesktopsAndItemsService;
 
-    public UserDesktops(UserID userId, DesktopRepository desktopRepository, DesktopFactory desktopFactory) {
+    public UserDesktops(UserID userId, DesktopRepository desktopRepository, SharedDesktopsAndItemsService desktopFactory) {
 	super();
 	setUserId(userId);
 	this.desktopRepository = desktopRepository;
-	this.desktopFactory = desktopFactory;
+	this.sharedDesktopsAndItemsService = desktopFactory;
     }
 
     /**
@@ -227,11 +227,11 @@ public class UserDesktops {
     }
 
     public List<SharedDesktopItem> calculateSharedPages() {
-	return this.desktopFactory.sharedPagesToUser(this.userId);
+	return this.sharedDesktopsAndItemsService.sharedPagesToUser(this.userId);
     }
 
-    public List<Desktop> calculateSharedDesktops() {
-	return this.desktopFactory.desktopsShared(this.userId);
+    public List<SharedDesktop> calculateSharedDesktops() {
+	return this.sharedDesktopsAndItemsService.sharedDesktopsToUser(this.userId);
     }
 
     public void shareDesktop(DesktopID desktopId, UserGroupID userGroupId, PermissionEnum permission) {

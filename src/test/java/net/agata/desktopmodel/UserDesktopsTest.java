@@ -14,9 +14,10 @@ import io.vavr.Tuple2;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
-import net.agata.desktopmodel.domain.desktop.factory.DesktopFactory;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
+import net.agata.desktopmodel.domain.desktop.service.SharedDesktopsAndItemsService;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
+import net.agata.desktopmodel.domain.desktop.valueobject.SharedDesktop;
 import net.agata.desktopmodel.domain.desktop.valueobject.SharedDesktopItem;
 import net.agata.desktopmodel.domain.desktop.valueobject.UserDesktops;
 import net.agata.desktopmodel.domain.page.repository.PageRepository;
@@ -37,7 +38,7 @@ public class UserDesktopsTest {
     private UserID userId;
     private DesktopRepository desktopRepository;
     private PageRepository pageRepository;
-    private DesktopFactory desktopFactory;
+    private SharedDesktopsAndItemsService sharedDesktopsAndItemsService;
 
     public UserDesktopsTest() {
 	super();
@@ -46,8 +47,8 @@ public class UserDesktopsTest {
 	this.pageRepository = new PageRepositoryInMemoryImpl();
 	this.desktopRepository = new DesktopRepositoryInMemoryImpl();
 
-	this.desktopFactory = new DesktopFactory(this.pageRepository, desktopRepository);
-	this.userDesktops = new UserDesktops(this.userId, this.desktopRepository, this.desktopFactory);
+	this.sharedDesktopsAndItemsService = new SharedDesktopsAndItemsService(this.pageRepository, desktopRepository);
+	this.userDesktops = new UserDesktops(this.userId, this.desktopRepository, this.sharedDesktopsAndItemsService);
     }
 
     @Test
@@ -269,8 +270,7 @@ public class UserDesktopsTest {
 
     @Test
     public void calculateSharedDesktops() {
-	// TODO DEVOLVER OBJETOS CUSTOM EN LUGAR DE UN DESKTOPS
-	List<Desktop> sharedDesktops = userDesktops.calculateSharedDesktops();
+	List<SharedDesktop> sharedDesktops = userDesktops.calculateSharedDesktops();
 
 	Assert.assertNotNull(sharedDesktops);
 	Assert.assertTrue(sharedDesktops.size() == 1);

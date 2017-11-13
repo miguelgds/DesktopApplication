@@ -6,6 +6,7 @@ import java.util.List;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
+import net.agata.desktopmodel.domain.desktop.valueobject.SharedDesktop;
 import net.agata.desktopmodel.domain.page.valueobject.PageID;
 import net.agata.desktopmodel.subdomain.user.UserGroupID;
 import net.agata.desktopmodel.subdomain.user.UserID;
@@ -27,7 +28,7 @@ public interface DesktopRepository {
 
     DesktopItem findDesktopItemByPage(PageID pageId);
 
-    List<Desktop> sharedDesktopsByUser(UserID userId);
+    List<SharedDesktop> sharedDesktopsByUser(UserID userId);
 
     void shareDesktop(UserID userId, DesktopID desktopId, UserGroupID userGroupId, PermissionEnum permission);
 
