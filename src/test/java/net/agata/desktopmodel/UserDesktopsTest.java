@@ -166,7 +166,7 @@ public class UserDesktopsTest {
 	ColorID itemColor = new ColorID((short) 7);
 	PageID itemPageId = new PageID(77);
 
-	DesktopItem newItem = userDesktops.addPageToDesktop(desktopId, itemIcon, itemColor, itemPageId);
+	DesktopItem newItem = userDesktops.appendPageToDesktop(desktopId, itemIcon, itemColor, itemPageId);
 	
 	Optional<DesktopItem> desktopItemCreated = desktopRepository.findByUser(this.userId)
 	 		 		   .stream()
@@ -212,7 +212,7 @@ public class UserDesktopsTest {
 
     @Test
     public void calculateSharedItemsDesktop() {
-	List<SharedDesktopItem> sharedItems = userDesktops.calculateSharedPages();
+	List<SharedDesktopItem> sharedItems = userDesktops.sharedPages();
 
 	Assert.assertNotNull(sharedItems);
 	Assert.assertTrue(sharedItems.size() == 2);
@@ -220,7 +220,7 @@ public class UserDesktopsTest {
 
     @Test
     public void calculateSharedDesktops() {
-	List<SharedDesktop> sharedDesktops = userDesktops.calculateSharedDesktops();
+	List<SharedDesktop> sharedDesktops = userDesktops.sharedDesktops();
 
 	Assert.assertNotNull(sharedDesktops);
 	Assert.assertTrue(sharedDesktops.size() == 1);
@@ -265,7 +265,7 @@ public class UserDesktopsTest {
 	ColorID itemColor = new ColorID((short) 7);
 	PageID itemPageId = new PageID(77);
 
-	DesktopItem newItem = userDesktops.addPageToDesktop(desktopId, itemIcon, itemColor, itemPageId);
+	DesktopItem newItem = userDesktops.appendPageToDesktop(desktopId, itemIcon, itemColor, itemPageId);
 	
 	Optional<DesktopItem> desktopItemCreated = desktopRepository.findById(newItem.getDesktopId())
 					   			    .getItems()

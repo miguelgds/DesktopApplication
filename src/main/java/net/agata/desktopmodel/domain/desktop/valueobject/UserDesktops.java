@@ -232,16 +232,16 @@ public class UserDesktops {
 		   .shortValue();
     }
 
-    public DesktopItem addPageToDesktop(DesktopID desktopId, IconID itemIcon, ColorID itemColor, PageID itemPageId) {
+    public DesktopItem appendPageToDesktop(DesktopID desktopId, IconID itemIcon, ColorID itemColor, PageID itemPageId) {
 	return this.findUserDesktopActive(desktopId)
 		   .orElse(() -> this.findReadWriteSharedDesktop(desktopId))
 		   .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
-		   .map(d -> addPageToDesktop(d, itemIcon, itemColor, itemPageId))
+		   .map(d -> appendPageToDesktop(d, itemIcon, itemColor, itemPageId))
 		   .getOrNull();	
     }
 
-    private DesktopItem addPageToDesktop(Desktop desktop, IconID itemIcon, ColorID itemColor, PageID itemPageId) {
-	DesktopItem newItem = desktop.addPage(itemIcon, itemColor, itemPageId);
+    private DesktopItem appendPageToDesktop(Desktop desktop, IconID itemIcon, ColorID itemColor, PageID itemPageId) {
+	DesktopItem newItem = desktop.appendPage(itemIcon, itemColor, itemPageId);
 	desktopRepository.update(desktop);
 	return newItem;
     }
@@ -255,16 +255,16 @@ public class UserDesktops {
     }
     
     private DesktopItem addApplicationToDesktop(Desktop desktop, IconID itemIcon, ColorID itemColor, ApplicationID itemApplicationId) {
-	DesktopItem newItem = desktop.addApplication(itemIcon, itemColor, itemApplicationId);
+	DesktopItem newItem = desktop.appendApplication(itemIcon, itemColor, itemApplicationId);
 	desktopRepository.update(desktop);
 	return newItem;
     }
 
-    public List<SharedDesktopItem> calculateSharedPages() {
+    public List<SharedDesktopItem> sharedPages() {
 	return this.sharedDesktopsAndItemsService.sharedPagesToUser(this.userId);
     }
 
-    public List<SharedDesktop> calculateSharedDesktops() {
+    public List<SharedDesktop> sharedDesktops() {
 	return this.sharedDesktopsAndItemsService.sharedDesktopsToUser(this.userId);
     }
 
@@ -281,38 +281,9 @@ public class UserDesktops {
      * ACCESSORS
      */
 
-    public UserID getUserId() {
-	return userId;
-    }
-
     private void setUserId(UserID userId) {
 	Validate.notNull(userId);
 	this.userId = userId;
-    }
-
-    @Override
-    public int hashCode() {
-	final int prime = 31;
-	int result = 1;
-	result = prime * result + ((userId == null) ? 0 : userId.hashCode());
-	return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-	if (this == obj)
-	    return true;
-	if (obj == null)
-	    return false;
-	if (getClass() != obj.getClass())
-	    return false;
-	UserDesktops other = (UserDesktops) obj;
-	if (userId == null) {
-	    if (other.userId != null)
-		return false;
-	} else if (!userId.equals(other.userId))
-	    return false;
-	return true;
     }
 
 }

@@ -52,7 +52,7 @@ public class Desktop {
      * BUSINESS LOGIC
      */
 
-    public DesktopItem addApplication(IconID iconId, ColorID colorId, ApplicationID applicationId) {
+    public DesktopItem appendApplication(IconID iconId, ColorID colorId, ApplicationID applicationId) {
 	Validate.isTrue(isActive(), "No se puede añadir una aplicación a un escritorio que no está activo");
 
 	DesktopItem newItem = new DesktopItem(new DesktopItemID(UUID.randomUUID().toString()), this.desktopId, iconId, colorId, null,
@@ -61,7 +61,7 @@ public class Desktop {
 	return newItem;
     }
 
-    public DesktopItem addPage(IconID iconId, ColorID colorId, PageID pageId) {
+    public DesktopItem appendPage(IconID iconId, ColorID colorId, PageID pageId) {
 	Validate.isTrue(isActive(), "No se puede añadir una página a un escritorio que no está activo");
 
 	DesktopItem newItem = new DesktopItem(new DesktopItemID(UUID.randomUUID().toString()), this.desktopId, iconId, colorId, pageId,
