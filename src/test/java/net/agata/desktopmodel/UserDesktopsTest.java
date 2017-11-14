@@ -110,6 +110,16 @@ public class UserDesktopsTest {
     }
 
     @Test
+    public void unsetItemFavourite() {
+	userDesktops.unsetFavouriteItem();
+
+	Assert.assertTrue(desktopRepository.findByUser(this.userId)
+	 		 		  .stream()
+	 		 		  .flatMap(d -> d.getItems().stream())
+	 		 		  .noneMatch(DesktopItem::getIsFavourite));
+    }
+
+    @Test
     public void relocateDesktopItem() {
 	DesktopItemID desktopItemId = InMemoryDatabase.DESKTOP_ITEM_ID_2_4;
 	Short itemOrderTo = (short) 1;

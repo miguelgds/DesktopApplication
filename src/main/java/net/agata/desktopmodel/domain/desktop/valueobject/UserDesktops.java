@@ -127,11 +127,14 @@ public class UserDesktops {
     }
     
     private void setItemAsFavourite(Desktop desktop, DesktopItemID desktopItemId) {
+	unsetFavouriteItem();
+	setDesktopItemAsFavourite(desktop, desktopItemId);
+    }
+    
+    public void unsetFavouriteItem(){
 	this.findFavourite()	    
 	    .peek(item -> this.findUserDesktopActive(item.getDesktopId())
 		    	      .peek(desktopForCurrentFavourite -> unsetDesktopItemAsFavourite(desktopForCurrentFavourite, item.getDesktopItemId())));
-
-	setDesktopItemAsFavourite(desktop, desktopItemId);
     }
 
     private void setDesktopItemAsFavourite(Desktop desktop, DesktopItemID desktopItemId) {
