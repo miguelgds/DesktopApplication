@@ -8,23 +8,27 @@ import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
 
 public class SharedDesktopDesktopItem {
+    private final DesktopItemID desktopItemId;
     private final IconID icon;
     private final ColorID color;
     private final PageID page;
     private final ApplicationID application;
-    private final Short order;
 
-    public SharedDesktopDesktopItem(IconID icon, ColorID color, PageID page, ApplicationID application, Short order) {
+    public SharedDesktopDesktopItem(DesktopItemID desktopItemId, IconID icon, ColorID color, PageID page, ApplicationID application) {
 	super();
+	Validate.notNull(desktopItemId);
 	Validate.notNull(icon);
 	Validate.notNull(color);
 	Validate.isTrue(page != null || application != null);
-	Validate.notNull(order);
+	this.desktopItemId = desktopItemId;
 	this.icon = icon;
 	this.color = color;
 	this.page = page;
 	this.application = application;
-	this.order = order;
+    }
+
+    public DesktopItemID getDesktopItemId() {
+	return desktopItemId;
     }
 
     public IconID getIcon() {
@@ -43,18 +47,14 @@ public class SharedDesktopDesktopItem {
 	return application;
     }
 
-    public Short getOrder() {
-	return order;
-    }
-
     @Override
     public int hashCode() {
 	final int prime = 31;
 	int result = 1;
 	result = prime * result + ((application == null) ? 0 : application.hashCode());
 	result = prime * result + ((color == null) ? 0 : color.hashCode());
+	result = prime * result + ((desktopItemId == null) ? 0 : desktopItemId.hashCode());
 	result = prime * result + ((icon == null) ? 0 : icon.hashCode());
-	result = prime * result + ((order == null) ? 0 : order.hashCode());
 	result = prime * result + ((page == null) ? 0 : page.hashCode());
 	return result;
     }
@@ -78,15 +78,15 @@ public class SharedDesktopDesktopItem {
 		return false;
 	} else if (!color.equals(other.color))
 	    return false;
+	if (desktopItemId == null) {
+	    if (other.desktopItemId != null)
+		return false;
+	} else if (!desktopItemId.equals(other.desktopItemId))
+	    return false;
 	if (icon == null) {
 	    if (other.icon != null)
 		return false;
 	} else if (!icon.equals(other.icon))
-	    return false;
-	if (order == null) {
-	    if (other.order != null)
-		return false;
-	} else if (!order.equals(other.order))
 	    return false;
 	if (page == null) {
 	    if (other.page != null)
@@ -98,8 +98,9 @@ public class SharedDesktopDesktopItem {
 
     @Override
     public String toString() {
-	return "SharedDesktopDesktopItem [icon=" + icon + ", color=" + color + ", page=" + page + ", application=" + application
-		+ ", order=" + order + "]";
+	return "SharedDesktopDesktopItem [desktopItemId=" + desktopItemId + ", icon=" + icon + ", color=" + color + ", page=" + page
+		+ ", application=" + application + "]";
     }
+
 
 }

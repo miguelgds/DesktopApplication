@@ -9,23 +9,31 @@ import net.agata.desktopmodel.subdomain.ui.IconID;
 import net.agata.desktopmodel.utils.types.PermissionEnum;
 
 public class SharedDesktopItem {
+    private final DesktopItemID desktopItemId;
     private final IconID icon;
     private final ColorID color;
     private final PageID page;
     private final ApplicationID application;
     private final PermissionEnum permission;
 
-    public SharedDesktopItem(IconID icon, ColorID color, PageID page, ApplicationID application, PermissionEnum permission) {
+    public SharedDesktopItem(DesktopItemID desktopItemId, IconID icon, ColorID color, PageID page, ApplicationID application,
+	    PermissionEnum permission) {
 	super();
+	Validate.notNull(desktopItemId);
 	Validate.notNull(icon);
 	Validate.notNull(color);
 	Validate.isTrue(page != null || application != null);
 	Validate.notNull(permission);
+	this.desktopItemId = desktopItemId;
 	this.icon = icon;
 	this.color = color;
 	this.page = page;
 	this.application = application;
 	this.permission = permission;
+    }
+
+    public DesktopItemID getDesktopItemId() {
+	return desktopItemId;
     }
 
     public IconID getIcon() {
@@ -54,6 +62,7 @@ public class SharedDesktopItem {
 	int result = 1;
 	result = prime * result + ((application == null) ? 0 : application.hashCode());
 	result = prime * result + ((color == null) ? 0 : color.hashCode());
+	result = prime * result + ((desktopItemId == null) ? 0 : desktopItemId.hashCode());
 	result = prime * result + ((icon == null) ? 0 : icon.hashCode());
 	result = prime * result + ((page == null) ? 0 : page.hashCode());
 	result = prime * result + ((permission == null) ? 0 : permission.hashCode());
@@ -79,6 +88,11 @@ public class SharedDesktopItem {
 		return false;
 	} else if (!color.equals(other.color))
 	    return false;
+	if (desktopItemId == null) {
+	    if (other.desktopItemId != null)
+		return false;
+	} else if (!desktopItemId.equals(other.desktopItemId))
+	    return false;
 	if (icon == null) {
 	    if (other.icon != null)
 		return false;
@@ -96,9 +110,8 @@ public class SharedDesktopItem {
 
     @Override
     public String toString() {
-	return "SharedDesktopItem [icon=" + icon + ", color=" + color + ", page=" + page + ", application=" + application + ", permission="
-		+ permission + "]";
+	return "SharedDesktopItem [desktopItemId=" + desktopItemId + ", icon=" + icon + ", color=" + color + ", page=" + page
+		+ ", application=" + application + ", permission=" + permission + "]";
     }
-
 
 }

@@ -3,7 +3,6 @@ package net.agata.desktopmodel;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -17,6 +16,7 @@ import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
 import net.agata.desktopmodel.domain.desktop.service.SharedDesktopsAndItemsService;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
+import net.agata.desktopmodel.domain.desktop.valueobject.DesktopItemID;
 import net.agata.desktopmodel.domain.desktop.valueobject.SharedDesktop;
 import net.agata.desktopmodel.domain.desktop.valueobject.SharedDesktopItem;
 import net.agata.desktopmodel.domain.desktop.valueobject.UserDesktops;
@@ -85,106 +85,56 @@ public class UserDesktopsTest {
 
     @Test
     public void moveDesktopItem() {	
-	DesktopID desktopFrom = InMemoryDatabase.DESKTOP_ID_1;
+	DesktopItemID desktopItemId = InMemoryDatabase.DESKTOP_ITEM_ID_1_0;
 	DesktopID desktopTo = InMemoryDatabase.DESKTOP_ID_5;
 	
-	userDesktops.moveItem(desktopFrom, (short) 0, desktopTo);
+	userDesktops.moveItem(desktopItemId, desktopTo);
 
 	Assert.assertTrue(desktopRepository.findByUser(this.userId)
 					   .stream()
-					   .filter(d -> d.getDesktopId().equals(desktopFrom))
-					   .findAny()
-					   .map(d -> d.getItems().size())
-					   .orElse(0) == 0);
-	Assert.assertTrue(desktopRepository.findByUser(this.userId)
-		   			   .stream()
-		   			   .filter(d -> d.getDesktopId().equals(desktopTo))
-		   			   .findAny()
-					   .map(d -> d.getItems().size())
-					   .orElse(0) == 2);
+					   .flatMap(d -> d.getItems().stream())
+					   .filter(di -> di.getDesktopItemId().equals(desktopItemId))
+					   .allMatch(di -> di.getDesktopId().equals(desktopTo)));
     }
 
     @Test
     public void changeItemFavourite() {
-	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_1;
-	Short order = (short) 0;
-	userDesktops.setItemAsFavourite(desktopId, order);
+	DesktopItemID desktopItemId = InMemoryDatabase.DESKTOP_ITEM_ID_1_0;
+	userDesktops.setItemAsFavourite(desktopItemId);
 
-	desktopRepository.findByUser(this.userId)
+	Assert.assertTrue(desktopRepository.findByUser(this.userId)
 	 		 .stream()
-	 		 .flatMap(d -> d.getItems()
-	 			        .stream()
-	 			        .filter(DesktopItem::getIsFavourite))
-	 		 .forEach(item -> Assert.assertTrue(item.getDesktopId().equals(desktopId)
-	 			 				&& item.getOrder().equals(order)));
+	 		 .flatMap(d -> d.getItems().stream())
+	 		 .filter(DesktopItem::getIsFavourite)
+	 		 .allMatch(di -> di.getDesktopItemId().equals(desktopItemId)));
     }
 
     @Test
     public void relocateDesktopItem() {
-	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_2;
-	Short itemOrderFrom = (short) 4;
+	DesktopItemID desktopItemId = InMemoryDatabase.DESKTOP_ITEM_ID_2_4;
 	Short itemOrderTo = (short) 1;
 	
-	Optional<DesktopItem> desktopItemBefore = desktopRepository.findById(desktopId)
-			 					 .getItems()
-			 					 .stream()
-			 					 .sorted(Comparator.comparing(DesktopItem::getOrder))
-			 					 .skip(itemOrderFrom)
-			 					 .findFirst();
+	userDesktops.changeDesktopItemOrder(desktopItemId, itemOrderTo);
 	
-	userDesktops.changeDesktopItemOrder(desktopId, itemOrderFrom, itemOrderTo);
-	
-	Optional<DesktopItem> desktopItemAfter = desktopRepository.findById(desktopId)
-        		       					 .getItems()
-        		       					 .stream()
-        		       					 .sorted(Comparator.comparing(DesktopItem::getOrder))
-        		       					 .skip(itemOrderTo)
-			 					 .findFirst();
-	
-	Assert.assertTrue(desktopItemBefore.isPresent());
-	Assert.assertTrue(desktopItemAfter.isPresent());
-	Assert.assertTrue(desktopItemsEqualsExceptOrder(desktopItemBefore.get(), desktopItemAfter.get()));
-
-    }
-
-    private boolean desktopItemsEqualsExceptOrder(DesktopItem item1, DesktopItem item2){
-	return Objects.equals(item1.getDesktopId(), item2.getDesktopId())
-		&& Objects.equals(item1.getIconId(), item2.getIconId())
-		&& Objects.equals(item1.getColorId(), item2.getColorId())
-		&& Objects.equals(item1.getPageId(), item2.getPageId())
-		&& Objects.equals(item1.getApplicationId(), item2.getApplicationId())
-		&& Objects.equals(item1.getIsFavourite(), item2.getIsFavourite());
+	Assert.assertTrue(desktopRepository.findByUser(userId)
+        		       		   .stream()
+        		       		   .flatMap(d -> d.getItems()
+        		       			   	  .stream())
+        		       		   .filter(di -> di.getDesktopItemId().equals(desktopItemId))
+        		       		   .allMatch(di -> di.getOrder().equals(itemOrderTo)));
     }
 
     @Test
     public void removeDesktopItem() {
-	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_2;
-	Short itemOrder = (short) 5;
-
-	Optional<DesktopItem> desktopToRemove = desktopRepository.findById(desktopId)
-			 					 .getItems()
-			 					 .stream()
-			 					 .filter(item -> item.getOrder().equals(itemOrder))
-			 					 .findAny();
-	Assert.assertTrue(desktopToRemove.isPresent());
+	DesktopItemID desktopItemId = InMemoryDatabase.DESKTOP_ITEM_ID_2_5;
 	
-	userDesktops.removeDesktopItem(desktopId, itemOrder);
+	userDesktops.removeDesktopItem(desktopItemId);
 	
-	Assert.assertTrue(desktopRepository.findByUser(this.userId)
-	 		 		   .stream()
-	 		 		   .filter(d -> d.getDesktopId().equals(desktopId))
-	 		 		   .flatMap(d -> d.getItems().stream())
-	 		 		   .noneMatch(item -> this.desktopItemsEquals(item, desktopToRemove.get())));
-    }
-    
-    private boolean desktopItemsEquals(DesktopItem item1, DesktopItem item2){
-	return Objects.equals(item1.getDesktopId(), item2.getDesktopId())
-		&& Objects.equals(item1.getIconId(), item2.getIconId())
-		&& Objects.equals(item1.getColorId(), item2.getColorId())
-		&& Objects.equals(item1.getPageId(), item2.getPageId())
-		&& Objects.equals(item1.getApplicationId(), item2.getApplicationId())
-		&& Objects.equals(item1.getIsFavourite(), item2.getIsFavourite())
-		&& Objects.equals(item1.getOrder(), item2.getOrder());
+	Assert.assertTrue(desktopRepository.findByUser(userId)
+    		   			   .stream()
+    		   			   .flatMap(d -> d.getItems()
+    		   				   	  .stream())
+    		   			   .noneMatch(di -> di.getDesktopItemId().equals(desktopItemId)));
     }
 
     @Test
@@ -289,22 +239,15 @@ public class UserDesktopsTest {
 
     @Test
     public void removeSharedDesktopItem() {
-	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_6;
-	Short itemOrder = (short) 0;
-
-	Optional<DesktopItem> desktopToRemove = desktopRepository.findById(desktopId)
-			 					 .getItems()
-			 					 .stream()
-			 					 .filter(item -> item.getOrder().equals(itemOrder))
-			 					 .findAny();
-	Assert.assertTrue(desktopToRemove.isPresent());
+	DesktopItemID desktopItemId = InMemoryDatabase.DESKTOP_ITEM_ID_6_0;
 	
-	userDesktops.removeDesktopItem(desktopId, itemOrder);
+	userDesktops.removeDesktopItem(desktopItemId);
 	
-	Assert.assertTrue(desktopRepository.findById(desktopId)
-					   .getItems()
-	 		 		   .stream()
-	 		 		   .noneMatch(item -> this.desktopItemsEquals(item, desktopToRemove.get())));
+	Assert.assertTrue(desktopRepository.findByUser(userId)
+    		   			   .stream()
+    		   			   .flatMap(d -> d.getItems()
+    		   				   	  .stream())
+    		   			   .noneMatch(di -> di.getDesktopItemId().equals(desktopItemId)));
     }
     
     @Test
@@ -360,29 +303,17 @@ public class UserDesktopsTest {
     
     @Test
     public void relocateSharedDesktopItem() {
-	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_6;
-	Short itemOrderFrom = (short) 0;
+	DesktopItemID desktopItemId = InMemoryDatabase.DESKTOP_ITEM_ID_6_0;
 	Short itemOrderTo = (short) 1;
 	
-	Optional<DesktopItem> desktopItemBefore = desktopRepository.findById(desktopId)
-			 					 .getItems()
-			 					 .stream()
-			 					 .sorted(Comparator.comparing(DesktopItem::getOrder))
-			 					 .skip(itemOrderFrom)
-			 					 .findFirst();
+	userDesktops.changeDesktopItemOrder(desktopItemId, itemOrderTo);
 	
-	userDesktops.changeDesktopItemOrder(desktopId, itemOrderFrom, itemOrderTo);
-	
-	Optional<DesktopItem> desktopItemAfter = desktopRepository.findById(desktopId)
-        		       					 .getItems()
-        		       					 .stream()
-        		       					 .sorted(Comparator.comparing(DesktopItem::getOrder))
-        		       					 .skip(itemOrderTo)
-			 					 .findFirst();
-	
-	Assert.assertTrue(desktopItemBefore.isPresent());
-	Assert.assertTrue(desktopItemAfter.isPresent());
-	Assert.assertTrue(desktopItemsEqualsExceptOrder(desktopItemBefore.get(), desktopItemAfter.get()));
+	Assert.assertTrue(desktopRepository.findByUser(userId)
+        		       		   .stream()
+        		       		   .flatMap(d -> d.getItems()
+        		       			   	  .stream())
+        		       		   .filter(di -> di.getDesktopItemId().equals(desktopItemId))
+        		       		   .allMatch(di -> di.getOrder().equals(itemOrderTo)));	
 
     }
 

@@ -26,8 +26,8 @@ public class SharedDesktopsAndItemsService {
 			   .stream()			   
 			   .distinct()			   
 			   .map(sharedPage -> Optional.ofNullable(desktopRepository.findDesktopItemByPage(sharedPage.getPageId()))
-				   		      .map(di -> new SharedDesktopItem(di.getIconId(), di.getColorId(), di.getPageId(), di.getApplicationId(), 
-				   			      sharedPage.getPermission()))
+				   		      .map(di -> new SharedDesktopItem(di.getDesktopItemId(), di.getIconId(), di.getColorId(), 
+				   			      di.getPageId(), di.getApplicationId(), sharedPage.getPermission()))
 			   			      .orElse(null))
 			   .collect(Collectors.toList());
     }

@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Range;
@@ -12,6 +13,7 @@ import org.apache.commons.lang3.Validate;
 import io.vavr.control.Option;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
+import net.agata.desktopmodel.domain.desktop.valueobject.DesktopItemID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DisplacementMode;
 import net.agata.desktopmodel.domain.page.valueobject.PageID;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
@@ -53,7 +55,8 @@ public class Desktop {
     public DesktopItem addApplication(IconID iconId, ColorID colorId, ApplicationID applicationId) {
 	Validate.isTrue(isActive(), "No se puede añadir una aplicación a un escritorio que no está activo");
 
-	DesktopItem newItem = new DesktopItem(this.desktopId, iconId, colorId, null, applicationId, false, nextItemOrder());
+	DesktopItem newItem = new DesktopItem(new DesktopItemID(UUID.randomUUID().toString()), this.desktopId, iconId, colorId, null,
+		applicationId, false, nextItemOrder());
 	this.items.add(newItem);
 	return newItem;
     }
@@ -61,7 +64,8 @@ public class Desktop {
     public DesktopItem addPage(IconID iconId, ColorID colorId, PageID pageId) {
 	Validate.isTrue(isActive(), "No se puede añadir una página a un escritorio que no está activo");
 
-	DesktopItem newItem = new DesktopItem(this.desktopId, iconId, colorId, pageId, null, false, nextItemOrder());
+	DesktopItem newItem = new DesktopItem(new DesktopItemID(UUID.randomUUID().toString()), this.desktopId, iconId, colorId, pageId,
+		null, false, nextItemOrder());
 	this.items.add(newItem);
 	return newItem;
     }
@@ -92,13 +96,13 @@ public class Desktop {
 	}
     }
 
-    public void removeItem(Short order) {
+    public void removeItem(DesktopItemID desktopItemId) {
 	Validate.isTrue(isActive() && !this.readonly,
 		"Sólo se puede eliminar un item si el escritorio está activo y no es de solo lectura");
 
-	this.findItemByOrder(order)
-	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con orden %d para el escritorio.", order))
-	    .peek(items::remove);
+	Option.ofOptional(this.findItem(desktopItemId))
+	      .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con id %d", desktopItemId))
+	      .peek(items::remove);
     }
 
     public void moveItem(DesktopItem item, Desktop desktopTo) {
@@ -118,47 +122,38 @@ public class Desktop {
 	this.items.add(item);
     }
 
-    public void setItemAsFavourite(Short order) {
-	Validate.notNull(order);
+    public void setItemAsFavourite(DesktopItemID desktopItemId) {
+	Validate.notNull(desktopItemId);
 	
-	this.findItemByOrder(order)
-	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con orden %d para el escritorio.", order))
-	    .peek(DesktopItem::setAsFavourite);
+	Option.ofOptional(this.findItem(desktopItemId))
+	      .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con orden %d para el escritorio.", order))
+	      .peek(DesktopItem::setAsFavourite);
     }
     
-    public void unsetItemAsFavourite(Short order) {
-	Validate.notNull(order);
+    public void unsetItemAsFavourite(DesktopItemID desktopItemId) {
+	Validate.notNull(desktopItemId);
 	
-	this.findItemByOrder(order)
-	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con orden %d para el escritorio.", order))
-	    .peek(DesktopItem::unsetAsFavourite);
+	Option.ofOptional(this.findItem(desktopItemId))
+	      .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con orden %d para el escritorio.", order))
+	      .peek(DesktopItem::unsetAsFavourite);
     }
 
-    public Optional<DesktopItem> findItem(Short order){
+    public Optional<DesktopItem> findItem(DesktopItemID desktopItemId){
 	return this.getItems()
 		   .stream()
-		   .filter(item -> item.getOrder().equals(order))
+		   .filter(item -> item.getDesktopItemId().equals(desktopItemId))
 		   .findAny();	
     }
-    
-    private Option<DesktopItem> findItemByOrder(Short order){
-	return Option.ofOptional(this.items
-		   		     .stream()
-		   		     .filter(item -> item.getOrder().equals(order))
-		   		     .findAny());
-    }
 
-    public void reorderItem(Short itemOrderFrom, Short itemOrderTo) {
+    public void reorderItem(DesktopItemID desktopItemId, Short itemOrderTo) {
 	Validate.isTrue(!this.readonly, "No se pueden mover items en escritorios de solo lectura");
 	Range<Short> itemsOrderRange = currentItemsOrderRange();
-	Validate.isTrue(itemsOrderRange.contains(itemOrderFrom), "El orden origen (%d) debería estar entre %d y %d", itemOrderFrom,
-		itemsOrderRange.getMinimum(), itemsOrderRange.getMaximum());
 	Validate.isTrue(itemsOrderRange.contains(itemOrderTo), "El orden destino (%d) debería estar entre %d y %d", itemOrderTo,
 		itemsOrderRange.getMinimum(), itemsOrderRange.getMaximum());
 	
-	this.findItemByOrder(itemOrderFrom)
-	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con orden %d para el escritorio.", order))
-	    .peek(itemToReorder -> this.reorderItemAnRelocateTheOthers(itemToReorder, itemOrderTo));
+	Option.ofOptional(this.findItem(desktopItemId))
+	      .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con orden %d para el escritorio.", order))
+	      .peek(itemToReorder -> this.reorderItemAnRelocateTheOthers(itemToReorder, itemOrderTo));
     }
     
     private Range<Short> currentItemsOrderRange() {

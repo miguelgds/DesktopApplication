@@ -4,12 +4,14 @@ import org.apache.commons.lang3.Validate;
 
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
+import net.agata.desktopmodel.domain.desktop.valueobject.DesktopItemID;
 import net.agata.desktopmodel.domain.page.valueobject.PageID;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
 
 public class DesktopItem {
 
+    private DesktopItemID desktopItemId;
     private DesktopID desktopId;
     private IconID iconId;
     private ColorID colorId;
@@ -18,9 +20,10 @@ public class DesktopItem {
     private Boolean isFavourite;
     private Short order;
 
-    public DesktopItem(DesktopID desktopId, IconID iconId, ColorID colorId, PageID pageId, ApplicationID applicationId,
-	    Boolean isFavourite, Short order) {
+    public DesktopItem(DesktopItemID desktopItemId, DesktopID desktopId, IconID iconId, ColorID colorId, PageID pageId,
+	    ApplicationID applicationId, Boolean isFavourite, Short order) {
 	super();
+	setDesktopItemId(desktopItemId);
 	setDesktopId(desktopId);
 	setIconId(iconId);
 	setColorId(colorId);
@@ -32,7 +35,8 @@ public class DesktopItem {
     }
     
     public DesktopItem(DesktopItem item){
-	this(item.getDesktopId(), item.getIconId(), item.getColorId(), item.getPageId(), item.getApplicationId(), item.getIsFavourite(), item.getOrder());
+	this(item.getDesktopItemId(), item.getDesktopId(), item.getIconId(), item.getColorId(), item.getPageId(), item.getApplicationId(),
+		item.getIsFavourite(), item.getOrder());
     }
 
     /**
@@ -69,6 +73,15 @@ public class DesktopItem {
     /**
      * ACCESSORS
      */
+
+    public DesktopItemID getDesktopItemId() {
+	return desktopItemId;
+    }
+
+    public void setDesktopItemId(DesktopItemID desktopItemId) {
+	Validate.notNull(desktopItemId);
+	this.desktopItemId = desktopItemId;
+    }
 
     public DesktopID getDesktopId() {
 	return desktopId;
@@ -135,8 +148,7 @@ public class DesktopItem {
     public int hashCode() {
 	final int prime = 31;
 	int result = 1;
-	result = prime * result + ((desktopId == null) ? 0 : desktopId.hashCode());
-	result = prime * result + ((order == null) ? 0 : order.hashCode());
+	result = prime * result + ((desktopItemId == null) ? 0 : desktopItemId.hashCode());
 	return result;
     }
 
@@ -149,23 +161,19 @@ public class DesktopItem {
 	if (getClass() != obj.getClass())
 	    return false;
 	DesktopItem other = (DesktopItem) obj;
-	if (desktopId == null) {
-	    if (other.desktopId != null)
+	if (desktopItemId == null) {
+	    if (other.desktopItemId != null)
 		return false;
-	} else if (!desktopId.equals(other.desktopId))
-	    return false;
-	if (order == null) {
-	    if (other.order != null)
-		return false;
-	} else if (!order.equals(other.order))
+	} else if (!desktopItemId.equals(other.desktopItemId))
 	    return false;
 	return true;
     }
 
     @Override
     public String toString() {
-	return "DesktopItem [desktopId=" + desktopId + ", iconId=" + iconId + ", colorId=" + colorId + ", pageId=" + pageId
-		+ ", applicationId=" + applicationId + ", isFavourite=" + isFavourite + ", order=" + order + "]";
+	return "DesktopItem [desktopItemId=" + desktopItemId + ", desktopId=" + desktopId + ", iconId=" + iconId + ", colorId=" + colorId
+		+ ", pageId=" + pageId + ", applicationId=" + applicationId + ", isFavourite=" + isFavourite + ", order=" + order + "]";
     }
+
 
 }

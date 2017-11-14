@@ -3,7 +3,6 @@ package net.agata.desktopmodel.infrastructure.desktop.repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -11,7 +10,6 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 
 import io.vavr.Tuple2;
 import io.vavr.Tuple3;
-import io.vavr.Tuple7;
 import io.vavr.Tuple8;
 import io.vavr.control.Option;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
@@ -19,6 +17,7 @@ import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
+import net.agata.desktopmodel.domain.desktop.valueobject.DesktopItemID;
 import net.agata.desktopmodel.domain.desktop.valueobject.SharedDesktop;
 import net.agata.desktopmodel.domain.desktop.valueobject.SharedDesktopDesktopItem;
 import net.agata.desktopmodel.domain.page.valueobject.PageID;
@@ -46,13 +45,13 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 			       .map(t_d -> toDesktop(t_d, InMemoryDatabase.DESKTOP_ITEM
 				       			   .values()
 				 		     	   .stream()
-				 		     	   .filter(t_di -> t_di._1.equals(t_d._1))
+				 		     	   .filter(t_di -> t_di._2.equals(t_d._1))
 			       				   .collect(Collectors.toList())))
 			       .collect(Collectors.toList());
     }
     
     private static Desktop toDesktop(Tuple8<DesktopID, String, UserID, Short, Boolean, Boolean, StateEnum, Long> desktopTuple,
-	    List<Tuple7<DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short>> desktopItems){
+	    List<Tuple8<DesktopItemID, DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short>> desktopItems) {
 	Desktop desktop = new Desktop(desktopTuple._1, desktopTuple._2, desktopTuple._3, desktopTuple._4, desktopTuple._5, desktopTuple._6,
 		desktopTuple._7, desktopItems.stream()
 			    		     .map(DesktopRepositoryInMemoryImpl::toDesktopItem)
@@ -65,9 +64,9 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 	return desktop;
     }
 
-    private static DesktopItem toDesktopItem(Tuple7<DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short> desktopItem) {
+    private static DesktopItem toDesktopItem(Tuple8<DesktopItemID, DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short> desktopItem) {
 	return new DesktopItem(desktopItem._1, desktopItem._2, desktopItem._3, desktopItem._4, desktopItem._5, desktopItem._6,
-		desktopItem._7);
+		desktopItem._7, desktopItem._8);
     }
 
     @Override
@@ -88,23 +87,21 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
     @Override
     public Desktop save(Desktop desktop) {
 	InMemoryDatabase.DESKTOP.put(desktop.getDesktopId(), toDesktopTuple(desktop));
-	List<Tuple2<DesktopID, Short>> itemsToDelete = InMemoryDatabase.DESKTOP_ITEM.entrySet()	
+	List<DesktopItemID> itemsToDelete = InMemoryDatabase.DESKTOP_ITEM.values()
 	       			     .stream()
-	       			     .filter(entry -> entry.getValue()._1.equals(desktop.getDesktopId()))
-	       			     .map(Entry::getKey)
+	       			     .filter(t_di -> t_di._2.equals(desktop.getDesktopId()))
+	       			     .map(Tuple8<DesktopItemID, DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short>::_1)
 	       			     .collect(Collectors.toList());
 	       			     
 	itemsToDelete.forEach(InMemoryDatabase.DESKTOP_ITEM::remove);
 	desktop.getItems()
 	       .stream()
-	       .forEach(desktopItem -> InMemoryDatabase.DESKTOP_ITEM.put(
-		       				new Tuple2<>(desktopItem.getDesktopId(), 
-		       				desktopItem.getOrder()), toDesktopItemTuple(desktopItem)));
+	       .forEach(desktopItem -> InMemoryDatabase.DESKTOP_ITEM.put(desktopItem.getDesktopItemId(), toDesktopItemTuple(desktopItem)));
 	return desktop;
     }
 
-    private Tuple7<DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short> toDesktopItemTuple(DesktopItem desktopItem) {
-	return new Tuple7<>(desktopItem.getDesktopId(), desktopItem.getIconId(), desktopItem.getColorId(), desktopItem.getPageId(),
+    private Tuple8<DesktopItemID, DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short> toDesktopItemTuple(DesktopItem desktopItem) {
+	return new Tuple8<>(desktopItem.getDesktopItemId(), desktopItem.getDesktopId(), desktopItem.getIconId(), desktopItem.getColorId(), desktopItem.getPageId(),
 		desktopItem.getApplicationId(), desktopItem.getIsFavourite(), desktopItem.getOrder());
     }
 
@@ -128,7 +125,7 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 	return InMemoryDatabase.DESKTOP_ITEM
 			.values()
 			.stream()
-			.filter(t_di -> pageId.equals(t_di._4))
+			.filter(t_di -> pageId.equals(t_di._5))
 			.findAny()
 			.map(DesktopRepositoryInMemoryImpl::toDesktopItem)
 			.orElse(null);
@@ -151,21 +148,21 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 				       			     .map(t_d -> DesktopRepositoryInMemoryImpl.toSharedDesktop(t_d, t_dug._3, InMemoryDatabase.DESKTOP_ITEM
 			       						    			      		.values()
 			       						    			      		.stream()
-			       						    			      		.filter(t_di -> t_di._1.equals(t_d._1))
+			       						    			      		.filter(t_di -> t_di._2.equals(t_d._1))
 			       						    			      		.collect(Collectors.toList()))))			       	
 			       .collect(Collectors.toList());
     }
 
     private static SharedDesktop toSharedDesktop(Tuple8<DesktopID, String, UserID, Short, Boolean, Boolean, StateEnum, Long> desktopTuple, PermissionEnum permission,
-	    List<Tuple7<DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short>> desktopItemTuples) {
+	    List<Tuple8<DesktopItemID, DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short>> desktopItemTuples) {
 	return new SharedDesktop(desktopTuple._1, desktopTuple._2, desktopTuple._5, desktopTuple._6, permission,
 		desktopItemTuples.stream()
 				 .map(DesktopRepositoryInMemoryImpl::toSharedDesktopDesktopItem)
 				 .collect(Collectors.toList()));
     }
     
-    private static SharedDesktopDesktopItem toSharedDesktopDesktopItem(Tuple7<DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short> desktopItemTuple){
-	return new SharedDesktopDesktopItem(desktopItemTuple._2, desktopItemTuple._3, desktopItemTuple._4, desktopItemTuple._5, desktopItemTuple._7);
+    private static SharedDesktopDesktopItem toSharedDesktopDesktopItem(Tuple8<DesktopItemID, DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short> desktopItemTuple){
+	return new SharedDesktopDesktopItem(desktopItemTuple._1, desktopItemTuple._3, desktopItemTuple._4, desktopItemTuple._5, desktopItemTuple._6);
     }
 
     @Override
@@ -196,7 +193,7 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 			       			     .map(t_d -> DesktopRepositoryInMemoryImpl.toDesktop(t_d, InMemoryDatabase.DESKTOP_ITEM
 		       						    			      		.values()
 		       						    			      		.stream()
-		       						    			      		.filter(t_di -> t_di._1.equals(t_d._1))
+		       						    			      		.filter(t_di -> t_di._2.equals(t_d._1))
 		       						    			      		.collect(Collectors.toList())))
 			       			     .map(d -> new Tuple2<Desktop, PermissionEnum>(d, t_dug._3)))		       
 		       .collect(Collectors.groupingBy(Tuple2<Desktop, PermissionEnum>::_2, 

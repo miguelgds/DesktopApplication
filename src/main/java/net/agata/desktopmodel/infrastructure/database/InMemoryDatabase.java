@@ -7,10 +7,10 @@ import java.util.Map;
 
 import io.vavr.Tuple2;
 import io.vavr.Tuple3;
-import io.vavr.Tuple7;
 import io.vavr.Tuple8;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
+import net.agata.desktopmodel.domain.desktop.valueobject.DesktopItemID;
 import net.agata.desktopmodel.domain.page.valueobject.PageID;
 import net.agata.desktopmodel.subdomain.ui.ColorID;
 import net.agata.desktopmodel.subdomain.ui.IconID;
@@ -66,21 +66,32 @@ public class InMemoryDatabase {
     }
 
     /**
-     * ID_DESKTOP, ID_ICON, ID_COLOR, ID_PAGE, ID_APPLICATION, IS_FAVOURITE, ORDER
+     * ID_DESKTOP_ITEM, ID_DESKTOP, ID_ICON, ID_COLOR, ID_PAGE, ID_APPLICATION, IS_FAVOURITE, ORDER
      */
-    private static final Map<Tuple2<DesktopID, Short>, Tuple7<DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short>> DESKTOP_ITEM_INITIAL_DATA = new HashMap<>();
-    public static final Map<Tuple2<DesktopID, Short>, Tuple7<DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short>> DESKTOP_ITEM = new HashMap<>();
+    public static final DesktopItemID DESKTOP_ITEM_ID_1_0 = new DesktopItemID("1.0");
+    public static final DesktopItemID DESKTOP_ITEM_ID_2_0 = new DesktopItemID("2.0");
+    public static final DesktopItemID DESKTOP_ITEM_ID_2_1 = new DesktopItemID("2.1");
+    public static final DesktopItemID DESKTOP_ITEM_ID_2_2 = new DesktopItemID("2.2");
+    public static final DesktopItemID DESKTOP_ITEM_ID_2_3 = new DesktopItemID("2.3");
+    public static final DesktopItemID DESKTOP_ITEM_ID_2_4 = new DesktopItemID("2.4");
+    public static final DesktopItemID DESKTOP_ITEM_ID_2_5 = new DesktopItemID("2.5");
+    public static final DesktopItemID DESKTOP_ITEM_ID_5_0 = new DesktopItemID("5.0");
+    public static final DesktopItemID DESKTOP_ITEM_ID_6_0 = new DesktopItemID("6.0");
+    public static final DesktopItemID DESKTOP_ITEM_ID_6_1 = new DesktopItemID("6.1");
+    
+    private static final Map<DesktopItemID, Tuple8<DesktopItemID, DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short>> DESKTOP_ITEM_INITIAL_DATA = new HashMap<>();
+    public static final Map<DesktopItemID, Tuple8<DesktopItemID, DesktopID, IconID, ColorID, PageID, ApplicationID, Boolean, Short>> DESKTOP_ITEM = new HashMap<>();
     static{
-	DESKTOP_ITEM_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_1, (short) 0), new Tuple7<>(DESKTOP_ID_1, new IconID((short) 1), new ColorID((short) 1), new PageID(1), null, false, (short) 0));
-	DESKTOP_ITEM_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_2, (short) 0), new Tuple7<>(DESKTOP_ID_2, new IconID((short) 7), new ColorID((short) 1), new PageID(7), null, false, (short) 0));
-	DESKTOP_ITEM_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_2, (short) 1), new Tuple7<>(DESKTOP_ID_2, new IconID((short) 6), new ColorID((short) 2), new PageID(4), null, false, (short) 1));
-	DESKTOP_ITEM_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_2, (short) 2), new Tuple7<>(DESKTOP_ID_2, new IconID((short) 1), new ColorID((short) 5), new PageID(3), null, false, (short) 2));
-	DESKTOP_ITEM_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_2, (short) 3), new Tuple7<>(DESKTOP_ID_2, new IconID((short) 5), new ColorID((short) 6), new PageID(2), null, false, (short) 3));
-	DESKTOP_ITEM_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_2, (short) 4), new Tuple7<>(DESKTOP_ID_2, new IconID((short) 8), new ColorID((short) 2), new PageID(8), null, false, (short) 4));
-	DESKTOP_ITEM_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_2, (short) 5), new Tuple7<>(DESKTOP_ID_2, new IconID((short) 3), new ColorID((short) 3), new PageID(2), null, false, (short) 5));
-	DESKTOP_ITEM_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_5, (short) 0), new Tuple7<>(DESKTOP_ID_5, new IconID((short) 2), new ColorID((short) 2), null, new ApplicationID("1"), false, (short) 0));
-	DESKTOP_ITEM_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_6, (short) 0), new Tuple7<>(DESKTOP_ID_6, new IconID((short) 11), new ColorID((short) 7), new PageID(12), null, false, (short) 0));
-	DESKTOP_ITEM_INITIAL_DATA.put(new Tuple2<>(DESKTOP_ID_6, (short) 1), new Tuple7<>(DESKTOP_ID_6, new IconID((short) 12), new ColorID((short) 13), new PageID(6), null, false, (short) 1));
+	DESKTOP_ITEM_INITIAL_DATA.put(DESKTOP_ITEM_ID_1_0, new Tuple8<>(DESKTOP_ITEM_ID_1_0, DESKTOP_ID_1, new IconID((short) 1), new ColorID((short) 1), new PageID(1), null, false, (short) 0));
+	DESKTOP_ITEM_INITIAL_DATA.put(DESKTOP_ITEM_ID_2_0, new Tuple8<>(DESKTOP_ITEM_ID_2_0, DESKTOP_ID_2, new IconID((short) 7), new ColorID((short) 1), new PageID(7), null, false, (short) 0));
+	DESKTOP_ITEM_INITIAL_DATA.put(DESKTOP_ITEM_ID_2_1, new Tuple8<>(DESKTOP_ITEM_ID_2_1, DESKTOP_ID_2, new IconID((short) 6), new ColorID((short) 2), new PageID(4), null, false, (short) 1));
+	DESKTOP_ITEM_INITIAL_DATA.put(DESKTOP_ITEM_ID_2_2, new Tuple8<>(DESKTOP_ITEM_ID_2_2, DESKTOP_ID_2, new IconID((short) 1), new ColorID((short) 5), new PageID(3), null, false, (short) 2));
+	DESKTOP_ITEM_INITIAL_DATA.put(DESKTOP_ITEM_ID_2_3, new Tuple8<>(DESKTOP_ITEM_ID_2_3, DESKTOP_ID_2, new IconID((short) 5), new ColorID((short) 6), new PageID(2), null, false, (short) 3));
+	DESKTOP_ITEM_INITIAL_DATA.put(DESKTOP_ITEM_ID_2_4, new Tuple8<>(DESKTOP_ITEM_ID_2_4, DESKTOP_ID_2, new IconID((short) 8), new ColorID((short) 2), new PageID(8), null, false, (short) 4));
+	DESKTOP_ITEM_INITIAL_DATA.put(DESKTOP_ITEM_ID_2_5, new Tuple8<>(DESKTOP_ITEM_ID_2_5, DESKTOP_ID_2, new IconID((short) 3), new ColorID((short) 3), new PageID(2), null, false, (short) 5));
+	DESKTOP_ITEM_INITIAL_DATA.put(DESKTOP_ITEM_ID_5_0, new Tuple8<>(DESKTOP_ITEM_ID_5_0, DESKTOP_ID_5, new IconID((short) 2), new ColorID((short) 2), null, new ApplicationID("1"), false, (short) 0));
+	DESKTOP_ITEM_INITIAL_DATA.put(DESKTOP_ITEM_ID_6_0, new Tuple8<>(DESKTOP_ITEM_ID_6_0, DESKTOP_ID_6, new IconID((short) 11), new ColorID((short) 7), new PageID(12), null, false, (short) 0));
+	DESKTOP_ITEM_INITIAL_DATA.put(DESKTOP_ITEM_ID_6_1, new Tuple8<>(DESKTOP_ITEM_ID_6_1, DESKTOP_ID_6, new IconID((short) 12), new ColorID((short) 13), new PageID(6), null, false, (short) 1));
     }
     
     /**
