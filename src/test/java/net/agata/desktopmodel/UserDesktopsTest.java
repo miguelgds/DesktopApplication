@@ -313,5 +313,77 @@ public class UserDesktopsTest {
 	userDesktops.removeDesktop(desktopId);
 	Assert.assertTrue(desktopRepository.findById(desktopId).getState().equals(StateEnum.DELETED));
     }
+    
+    @Test
+    public void addPageToSharedDesktop() {
+
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_6;
+	IconID itemIcon = new IconID((short) 17);
+	ColorID itemColor = new ColorID((short) 7);
+	PageID itemPageId = new PageID(77);
+
+	DesktopItem newItem = userDesktops.addPageToDesktop(desktopId, itemIcon, itemColor, itemPageId);
+	
+	Optional<DesktopItem> desktopItemCreated = desktopRepository.findById(newItem.getDesktopId())
+					   			    .getItems()
+					   			    .stream()
+					   			    .max(Comparator.comparing(DesktopItem::getOrder));
+
+	Assert.assertTrue(desktopItemCreated.isPresent());
+	Assert.assertEquals(desktopItemCreated.get().getIconId(), itemIcon);
+	Assert.assertEquals(desktopItemCreated.get().getColorId(), itemColor);
+	Assert.assertEquals(desktopItemCreated.get().getPageId(), itemPageId);
+	Assert.assertEquals(desktopItemCreated.get().getIsFavourite(), false);
+    }
+    
+    @Test
+    public void addApplicationToSharedDesktop() {
+
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_6;
+	IconID itemIcon = new IconID((short) 17);
+	ColorID itemColor = new ColorID((short) 7);
+	ApplicationID itemApplicationId = new ApplicationID("898");
+
+	DesktopItem newItem = userDesktops.addApplicationToDesktop(desktopId, itemIcon, itemColor, itemApplicationId);
+	
+	Optional<DesktopItem> desktopItemCreated = desktopRepository.findById(newItem.getDesktopId())
+	 		 		   			    .getItems()
+	 		 		   			    .stream()
+	 		 		   			    .max(Comparator.comparing(DesktopItem::getOrder));
+	 		 			      	  
+	Assert.assertTrue(desktopItemCreated.isPresent());
+	Assert.assertEquals(desktopItemCreated.get().getIconId(), itemIcon);
+	Assert.assertEquals(desktopItemCreated.get().getColorId(), itemColor);
+	Assert.assertEquals(desktopItemCreated.get().getApplicationId(), itemApplicationId);
+	Assert.assertEquals(desktopItemCreated.get().getIsFavourite(), false);
+    }
+    
+    @Test
+    public void relocateSharedDesktopItem() {
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_6;
+	Short itemOrderFrom = (short) 0;
+	Short itemOrderTo = (short) 1;
+	
+	Optional<DesktopItem> desktopItemBefore = desktopRepository.findById(desktopId)
+			 					 .getItems()
+			 					 .stream()
+			 					 .sorted(Comparator.comparing(DesktopItem::getOrder))
+			 					 .skip(itemOrderFrom)
+			 					 .findFirst();
+	
+	userDesktops.changeDesktopItemOrder(desktopId, itemOrderFrom, itemOrderTo);
+	
+	Optional<DesktopItem> desktopItemAfter = desktopRepository.findById(desktopId)
+        		       					 .getItems()
+        		       					 .stream()
+        		       					 .sorted(Comparator.comparing(DesktopItem::getOrder))
+        		       					 .skip(itemOrderTo)
+			 					 .findFirst();
+	
+	Assert.assertTrue(desktopItemBefore.isPresent());
+	Assert.assertTrue(desktopItemAfter.isPresent());
+	Assert.assertTrue(desktopItemsEqualsExceptOrder(desktopItemBefore.get(), desktopItemAfter.get()));
+
+    }
 
 }

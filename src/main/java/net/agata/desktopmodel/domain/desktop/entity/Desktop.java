@@ -69,7 +69,7 @@ public class Desktop {
     private Short nextItemOrder() {
 	return this.items.stream()
 		  	 .map(di -> di.getOrder().intValue())
-		  	 .max(Integer::max)
+		  	 .reduce(Integer::max)
 		  	 .map(m -> m + 1)
 		  	 .orElse(0)
 		  	 .shortValue();

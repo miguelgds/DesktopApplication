@@ -152,6 +152,7 @@ public class UserDesktops {
 	Validate.notNull(itemOrderTo);
 	
 	this.findUserDesktopActive(desktopId)
+	    .orElse(() -> this.findReadWriteSharedDesktop(desktopId))
 	    .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
 	    .peek(d -> changeDesktopItemOrder(d, itemOrderFrom, itemOrderTo));
 	
@@ -211,15 +212,16 @@ public class UserDesktops {
     private Short nextDesktopOrder(){
 	return this.userActiveDesktops()
 		   .stream()
-		   .map(Desktop::getOrder)
-		   .max(Integer::max)
-		   .map(max -> Integer.sum(max, 1))
+		   .map(d -> d.getOrder().intValue())
+		   .reduce(Integer::max)
+		   .map(max -> max + 1)
 		   .orElse(0)
 		   .shortValue();
     }
 
     public DesktopItem addPageToDesktop(DesktopID desktopId, IconID itemIcon, ColorID itemColor, PageID itemPageId) {
 	return this.findUserDesktopActive(desktopId)
+		   .orElse(() -> this.findReadWriteSharedDesktop(desktopId))
 		   .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
 		   .map(d -> addPageToDesktop(d, itemIcon, itemColor, itemPageId))
 		   .getOrNull();	
@@ -233,6 +235,7 @@ public class UserDesktops {
     
     public DesktopItem addApplicationToDesktop(DesktopID desktopId, IconID itemIcon, ColorID itemColor, ApplicationID itemApplicationId) {
 	return this.findUserDesktopActive(desktopId)
+		   .orElse(() -> this.findReadWriteSharedDesktop(desktopId)) 
 		   .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un escritorio activo con id %s asociado al usuario.", desktopId))
 		   .map(d -> addApplicationToDesktop(d, itemIcon, itemColor, itemApplicationId))
 		   .getOrNull();
