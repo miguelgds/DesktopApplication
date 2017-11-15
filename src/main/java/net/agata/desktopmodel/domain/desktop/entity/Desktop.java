@@ -1,5 +1,6 @@
 package net.agata.desktopmodel.domain.desktop.entity;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -11,7 +12,9 @@ import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.Validate;
 
 import io.vavr.control.Option;
+import net.agata.desktopmodel.domain.DomainEvent;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
+import net.agata.desktopmodel.domain.desktop.event.DesktopItemPageRemoved;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopItemID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DisplacementMode;
@@ -33,6 +36,8 @@ public class Desktop {
     private StateEnum state;
     private Set<DesktopItem> items = new HashSet<>();
     private Long version;
+
+    private final List<DomainEvent> changes = new ArrayList<>();
 
     public Desktop(DesktopID desktopId, String name, UserID userId, Short order, Boolean fixed, Boolean readonly, StateEnum state,
 	    Set<DesktopItem> items) {
@@ -87,7 +92,14 @@ public class Desktop {
 	Validate.isTrue(isActive() && !this.fixed && !this.readonly,
 		"Sólo se pueden eliminar escritorios activos y que no sean fijos ni de solo lectura");
 
+	removeAllItems();
 	setState(StateEnum.DELETED);
+    }
+    
+    private void removeAllItems(){
+	this.getItems()
+	    .stream()
+	    .forEach(this::removeItem);	
     }
 
     public void reorder(Short order) {
@@ -102,7 +114,14 @@ public class Desktop {
 
 	Option.ofOptional(this.findItem(desktopItemId))
 	      .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("No hay un item con id %d", desktopItemId))
-	      .peek(items::remove);
+	      .peek(this::removeItem);
+    }
+    
+    private void removeItem(DesktopItem desktopItem){
+	items.remove(desktopItem);
+	if(desktopItem.getPageId() != null){
+	    this.changes.add(new DesktopItemPageRemoved(desktopItem.getDesktopId(), desktopItem.getDesktopItemId(), desktopItem.getPageId()));
+	}
     }
 
     public void moveItem(DesktopItem item, Desktop desktopTo) {
@@ -263,6 +282,14 @@ public class Desktop {
 
     private void setVersion(Long version) {
 	this.version = version;
+    }
+
+    public List<DomainEvent> getUncommitedChanges() {
+	return new ArrayList<>(this.changes);
+    }
+
+    public void markChangesAsCommited() {
+	this.items.clear();
     }
 
     @Override

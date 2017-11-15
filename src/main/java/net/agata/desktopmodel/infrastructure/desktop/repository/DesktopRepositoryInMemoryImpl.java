@@ -6,12 +6,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import io.vavr.Tuple2;
 import io.vavr.Tuple3;
 import io.vavr.Tuple8;
 import io.vavr.control.Option;
+import net.agata.desktopmodel.domain.DomainEventPublisher;
 import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
@@ -31,6 +33,12 @@ import net.agata.desktopmodel.utils.types.PermissionEnum;
 import net.agata.desktopmodel.utils.types.StateEnum;
 
 public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
+
+    private DomainEventPublisher domainEventPublisher;
+
+    public DesktopRepositoryInMemoryImpl(DomainEventPublisher domainEventPublisher) {
+	this.domainEventPublisher = domainEventPublisher;
+    }
 
     @Override
     public DesktopID nextId() {
@@ -118,6 +126,8 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 	    throw new RuntimeException("No se puede acceder al campo version", e);
 	}
 	save(desktop);
+	domainEventPublisher.publish(desktop.getUncommitedChanges());
+	desktop.markChangesAsCommited();
     }
 
     @Override
@@ -174,6 +184,20 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 	      .onEmpty(() -> ExceptionUtils.throwIllegalArgumentException("El USER_GROUP %s no pertenece al USUARIO %s", userGroupId, userId));
 	
 	InMemoryDatabase.DESKTOP_USER_GROUP.put(new Tuple2<>(desktopId, userGroupId), new Tuple3<>(desktopId, userGroupId, permission));
+    }
+
+    @Override
+    public void unshareDesktop(DesktopID desktopId) {
+	Validate.notNull(desktopId);
+	
+	InMemoryDatabase.DESKTOP_USER_GROUP
+			.values()
+			.stream()
+			.filter(t_dug -> t_dug._1.equals(desktopId))
+			.map(t_dug -> new Tuple2<>(t_dug._1, t_dug._2))
+			.collect(Collectors.toList())
+			.stream()
+			.forEach(InMemoryDatabase.DESKTOP_USER_GROUP::remove);
     }
 
     @Override

@@ -45,7 +45,7 @@ public class UserDesktopsTest {
 	InMemoryDatabase.initData();
 	userId = new UserID(4);
 	this.pageRepository = new PageRepositoryInMemoryImpl();
-	this.desktopRepository = new DesktopRepositoryInMemoryImpl();
+	this.desktopRepository = new DesktopRepositoryInMemoryImpl(System.out::println);
 
 	this.sharedDesktopsAndItemsService = new SharedDesktopsAndItemsService(this.pageRepository, desktopRepository);
 	this.userDesktops = new UserDesktops(this.userId, this.desktopRepository, this.sharedDesktopsAndItemsService);
@@ -73,7 +73,7 @@ public class UserDesktopsTest {
 
     @Test
     public void removeDesktop() {
-	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_5;
+	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_2;
 	userDesktops.removeDesktop(desktopId);
 	Assert.assertTrue(desktopRepository.findByUser(this.userId)
 					   .stream()
@@ -263,8 +263,13 @@ public class UserDesktopsTest {
     @Test
     public void removeSharedDesktop() {
 	DesktopID desktopId = InMemoryDatabase.DESKTOP_ID_6;
+
 	userDesktops.removeDesktop(desktopId);
 	Assert.assertTrue(desktopRepository.findById(desktopId).getState().equals(StateEnum.DELETED));
+	Assert.assertTrue(InMemoryDatabase.DESKTOP_USER_GROUP
+					  .values()
+					  .stream()
+					  .noneMatch(t_dug -> t_dug._1.equals(desktopId)));
     }
     
     @Test

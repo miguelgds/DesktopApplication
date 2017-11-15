@@ -73,6 +73,7 @@ public class UserDesktops {
     
     private void removeDesktop(Desktop desktop) {
 	desktop.remove();
+	desktopRepository.unshareDesktop(desktop.getDesktopId());
 	desktopRepository.update(desktop);
     }
 

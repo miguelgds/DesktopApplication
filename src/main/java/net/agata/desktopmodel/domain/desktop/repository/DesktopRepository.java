@@ -33,6 +33,8 @@ public interface DesktopRepository {
 
     void shareDesktop(UserID userId, DesktopID desktopId, UserGroupID userGroupId, PermissionEnum permission);
 
+    void unshareDesktop(DesktopID desktopId);
+
     Map<PermissionEnum, List<Desktop>> findSharedsByUser(UserID userId);
 
 }

@@ -49,7 +49,7 @@ public class InMemoryDatabase {
     public static final Map<DesktopID, Tuple8<DesktopID, String, UserID, Short, Boolean, Boolean, StateEnum, Long>> DESKTOP = new HashMap<>();
     static{
 	DESKTOP_INITIAL_DATA.put(DESKTOP_ID_1, new Tuple8<>(DESKTOP_ID_1, "PANEL DE USUARIO", new UserID(4), (short) 0, true, true, StateEnum.ACTIVE, 0L));
-	DESKTOP_INITIAL_DATA.put(DESKTOP_ID_2, new Tuple8<>(DESKTOP_ID_2, "FUNCIONALIDADES COMUNES", new UserID(4), (short) 1, true, false, StateEnum.ACTIVE, 0L));
+	DESKTOP_INITIAL_DATA.put(DESKTOP_ID_2, new Tuple8<>(DESKTOP_ID_2, "FUNCIONALIDADES COMUNES", new UserID(4), (short) 1, false, false, StateEnum.ACTIVE, 0L));
 	DESKTOP_INITIAL_DATA.put(DESKTOP_ID_3, new Tuple8<>(DESKTOP_ID_3, "PANEL DE CONFIGURACION", new UserID(4), (short) 2, true, true, StateEnum.DELETED, 1L));
 	DESKTOP_INITIAL_DATA.put(DESKTOP_ID_4, new Tuple8<>(DESKTOP_ID_4, "PANEL CUSTOMIZADO1", new UserID(4), (short) 3, false, true, StateEnum.ACTIVE, 0L));
 	DESKTOP_INITIAL_DATA.put(DESKTOP_ID_5, new Tuple8<>(DESKTOP_ID_5, "PANEL CUSTOMIZADO2", new UserID(4), (short) 4, false, false, StateEnum.ACTIVE, 0L));
