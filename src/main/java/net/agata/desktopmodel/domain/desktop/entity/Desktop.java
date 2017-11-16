@@ -200,6 +200,17 @@ public class Desktop {
 	displacementMode.reorderItemsFromPivot(itemsToRelocate, itemToReorder);
     }
 
+    public Desktop removeItemsRelatedToRemovedApplication(ApplicationID applicationId) {
+	Validate.notNull(applicationId);
+
+	this.getItems()
+	    .stream()
+	    .filter(di -> applicationId.equals(di.getApplicationId()))
+	    .forEach(this::removeItem);
+	
+	return this;
+    }
+
     /**
      * ACCESSORS
      */

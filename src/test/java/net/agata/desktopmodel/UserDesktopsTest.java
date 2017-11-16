@@ -14,6 +14,7 @@ import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.repository.DesktopRepository;
+import net.agata.desktopmodel.domain.desktop.service.DesktopsService;
 import net.agata.desktopmodel.domain.desktop.service.SharedDesktopsAndItemsService;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopItemID;
@@ -39,6 +40,7 @@ public class UserDesktopsTest {
     private DesktopRepository desktopRepository;
     private PageRepository pageRepository;
     private SharedDesktopsAndItemsService sharedDesktopsAndItemsService;
+    private DesktopsService desktopService;
 
     public UserDesktopsTest() {
 	super();
@@ -49,6 +51,8 @@ public class UserDesktopsTest {
 
 	this.sharedDesktopsAndItemsService = new SharedDesktopsAndItemsService(this.pageRepository, desktopRepository);
 	this.userDesktops = new UserDesktops(this.userId, this.desktopRepository, this.sharedDesktopsAndItemsService);
+
+	this.desktopService = new DesktopsService(this.desktopRepository);
     }
 
     @Test
@@ -330,6 +334,18 @@ public class UserDesktopsTest {
         		       		   .filter(di -> di.getDesktopItemId().equals(desktopItemId))
         		       		   .allMatch(di -> di.getOrder().equals(itemOrderTo)));	
 
+    }
+
+    @Test
+    public void handleApplicationRemovedEvent() {
+	ApplicationID applicationId = new ApplicationID("1");
+
+	this.desktopService.removeDesktopItemsRelatedToRemovedApplication(applicationId);
+	
+	Assert.assertTrue(this.desktopRepository.findAll()
+			      .stream()
+			      .flatMap(d -> d.getItems().stream())
+			      .noneMatch(di -> applicationId.equals(di.getApplicationId())));
     }
 
 }

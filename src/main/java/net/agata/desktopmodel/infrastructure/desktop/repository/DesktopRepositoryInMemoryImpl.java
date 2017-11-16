@@ -3,6 +3,7 @@ package net.agata.desktopmodel.infrastructure.desktop.repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -224,6 +225,16 @@ public class DesktopRepositoryInMemoryImpl implements DesktopRepository {
 			       			      Collectors.mapping(Tuple2<Desktop, PermissionEnum>::_1, Collectors.toList())));
     }
     
-    
+    @Override
+    public Set<Desktop> findDesktopsThatContainsApplication(ApplicationID applicationId) {
+	return InMemoryDatabase.DESKTOP_ITEM
+			       .values()
+			       .stream()
+			       .filter(t_di -> applicationId.equals(t_di._6))
+			       .map(t_di -> t_di._2)
+			       .distinct()
+			       .map(this::findById)
+			       .collect(Collectors.toSet());			       
+    }
 
 }

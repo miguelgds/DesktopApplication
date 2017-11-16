@@ -3,7 +3,9 @@ package net.agata.desktopmodel.domain.desktop.repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import net.agata.desktopmodel.domain.application.valueobject.ApplicationID;
 import net.agata.desktopmodel.domain.desktop.entity.Desktop;
 import net.agata.desktopmodel.domain.desktop.entity.DesktopItem;
 import net.agata.desktopmodel.domain.desktop.valueobject.DesktopID;
@@ -36,5 +38,7 @@ public interface DesktopRepository {
     void unshareDesktop(DesktopID desktopId);
 
     Map<PermissionEnum, List<Desktop>> findSharedsByUser(UserID userId);
+
+    Set<Desktop> findDesktopsThatContainsApplication(ApplicationID applicationId);
 
 }
