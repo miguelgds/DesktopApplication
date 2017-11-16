@@ -10,7 +10,7 @@ ESCRITORIOS:
 	* Si me han compartido un escritorio con permisos RW podré:
 	* [X] Eliminar el escritorio
 	* [X] Eliminar un item 
-		* [ ] Habrá que enviar un evento de esta acción (cuando se elimina un item de tipo página, hay que eliminar la página relacionada)
+		* [X] Habrá que enviar un evento de esta acción (cuando se elimina un item de tipo página, hay que eliminar la página relacionada)
 	* [X] Añadir un item (página/aplicación)
 	* [X] Reordenar los elementos
 * [X] Todos los usuarios tendrán, al menos, un escritorio donde se situarán inicialmente las páginas que tenga compartidas
@@ -23,7 +23,7 @@ ELEMENTO DE ESCRITORIO:
 * [X] Se pueden mover a otro escritorio existente del mismo usuario (siempre y cuando el escritorio de destino no sea uno readonly/fijo)
 * [X] Se puede establecer como favorito, por lo que será lo que se muestre al iniciar la aplicación (sólo puede haber un elemento favorito por usuario).
 * [X] Son ordenables y eliminables mediante drag&drop (excepto que pertenezcan a un escritorio readonly).
-* [ ] Cuando se elimina una aplicación/página, habrá que suscribirse al evento para proceder a eliminar todos los items que la tengan asignada
+* [X] Cuando se elimina una aplicación, habrá que suscribirse al evento para proceder a eliminar todos los items que la tengan asignada
 * [ ] Tipo PAGINA COMPARTIDA
 	* [ ] PROPIETARIO
 		* [ ] Verla en el escritorio de COMPARTIDAS
